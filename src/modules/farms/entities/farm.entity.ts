@@ -9,10 +9,11 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { User } from "../../users/entities/user.entity";
+import { WithLocation } from "../../location/entities/with-location.entity";
 
 @Unique(["name", "user"])
 @Entity()
-export class Farm {
+export class Farm extends WithLocation {
   @PrimaryGeneratedColumn("uuid")
   public readonly id: string;
 
@@ -26,7 +27,6 @@ export class Farm {
   public size: number;
 
   @ManyToOne(() => User, user => user.farms, {
-    orphanedRowAction: "delete",
     nullable: false,
   })
   @JoinColumn({ name: "userId" })

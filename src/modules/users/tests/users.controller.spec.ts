@@ -35,7 +35,11 @@ describe("UsersController", () => {
   });
 
   describe("POST /users", () => {
-    const createUserDto: CreateUserInputDto = { email: "user@test.com", password: "password" };
+    const createUserDto: CreateUserInputDto = {
+      email: "user@test.com",
+      password: "password",
+      location: { address: "address", lat: 0, lng: 0 },
+    };
 
     it("should create new user", async () => {
       const res = await agent.post("/api/users").send(createUserDto);
@@ -62,7 +66,15 @@ describe("UsersController", () => {
     });
 
     it("should throw BadRequestError if invalid inputs are provided", async () => {
-      const res = await agent.post("/api/users").send({ email: "not-an-email", password: 12345 });
+      const res = await agent.post("/api/users").send({
+        email: "not-an-email",
+        password: 12345,
+        location: {
+          address: "address",
+          lat: 0,
+          lng: 0,
+        },
+      });
 
       expect(res.statusCode).toBe(400);
       expect(res.body).toMatchObject({

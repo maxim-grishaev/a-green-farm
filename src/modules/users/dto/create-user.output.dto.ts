@@ -1,4 +1,6 @@
+import { LocationDto } from "../../location/dto/location.dto";
 import { Expose, Transform } from "class-transformer";
+import { User } from "../entities/user.entity";
 
 /**
  * @openapi
@@ -15,9 +17,12 @@ import { Expose, Transform } from "class-transformer";
  *          type: string
  *        updatedAt:
  *          type: string
+ *        location:
+ *          $ref: '#/components/schemas/CoordinateDto'
  */
 export class CreateUserOutputDto {
-  constructor(partial?: Partial<CreateUserOutputDto>) {
+  constructor({ address, lat, lng, ...partial }: User) {
+    this.location = new LocationDto({ address, lat, lng });
     Object.assign(this, partial);
   }
 
@@ -34,4 +39,7 @@ export class CreateUserOutputDto {
   @Transform(({ value }) => (value as Date).toISOString())
   @Expose()
   public updatedAt: Date;
+
+  @Expose()
+  public location: LocationDto;
 }

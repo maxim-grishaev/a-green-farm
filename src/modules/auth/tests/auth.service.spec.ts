@@ -43,7 +43,7 @@ describe("AuthService", () => {
   describe(".login", () => {
     const loginDto: LoginUserInputDto = { email: "user@test.com", password: validPassword };
     const createUser = async (userDto: LoginUserInputDto) =>
-      ds.getRepository(User).save({ email: userDto.email, hashedPassword });
+      ds.getRepository(User).save({ email: userDto.email, hashedPassword, address: "xx", lat: 0, lng: 0 });
 
     it("should create access token for existing user", async () => {
       await createUser(loginDto);

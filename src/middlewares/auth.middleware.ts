@@ -29,7 +29,6 @@ export const authMiddleware =
     }
 
     const existingToken = await authService.getAccessToken(token);
-
     req.user = existingToken.user;
 
     next();

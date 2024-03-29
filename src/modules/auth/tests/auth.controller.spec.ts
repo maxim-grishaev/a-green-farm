@@ -3,18 +3,17 @@ import { Express } from "express";
 import http from "http";
 import { dataSource as ds } from "orm/orm.config";
 import * as supertest from "supertest";
-import * as bcrypt from "bcrypt";
 import { setupServer } from "server/server";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
 import { LoginUserInputDto } from "../dto/login-user.input.dto";
 import { AccessToken } from "../entities/access-token.entity";
 import { User } from "modules/users/entities/user.entity";
+import { hashPassword } from "../../../helpers/password";
 
 describe("AuthController", () => {
   let app: Express;
   let agent: supertest.SuperAgentTest;
   let server: http.Server;
-  let salt: string;
   let hashedPassword: string;
 
   const validPassword = "password";
@@ -25,8 +24,7 @@ describe("AuthController", () => {
 
     server = http.createServer(app).listen(config.APP_PORT);
 
-    salt = await bcrypt.genSalt(config.SALT_ROUNDS);
-    hashedPassword = await bcrypt.hash(validPassword, salt);
+    hashedPassword = await hashPassword(validPassword);
   });
 
   afterAll(async () => {
@@ -40,7 +38,8 @@ describe("AuthController", () => {
   });
 
   describe("POST /auth", () => {
-    const createUser = async (userDto: Partial<User>) => ds.getRepository(User).save({ email: userDto.email, hashedPassword });
+    const createUser = async (userDto: Partial<User>) =>
+      ds.getRepository(User).save({ email: userDto.email, hashedPassword, address: "xx", lat: 0, lng: 0 });
     const loginDto: LoginUserInputDto = { email: "user@test.com", password: validPassword };
 
     it("should login existing user", async () => {

@@ -59,7 +59,11 @@ describe("AuthMiddleware", () => {
   });
 
   it("should validate existing token with given token", async () => {
-    const user = await usersService.createUser({ email: "user@test.com", password: "pwd" });
+    const user = await usersService.createUser({
+      email: "user@test.com",
+      password: "pwd",
+      location: { address: "x", lat: 0, lng: 0 },
+    });
     const { token } = await signAsync(user);
 
     const req = { headers: { authorization: `Bearer ${token}` } } as RequestWithUser;

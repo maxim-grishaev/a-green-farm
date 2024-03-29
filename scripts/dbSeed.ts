@@ -8,24 +8,35 @@ import { hashPassword } from "../src/helpers/password";
 const range = (n: number) => [...Array(n).keys()];
 
 const REQ = {
-  countUsers: 1000,
+  countUsers: 100,
   maxFarmPerUser: 3,
 };
 
-const createFarm = (n: number, userNo: number) => {
+const createFarm = (n: number, userNo: number, coord: { lat: number; lng: number }) => {
   const frm: DeepPartial<Farm> = {};
   frm.name = `Farm # ${n} of user ${userNo}`;
   frm.size = Math.random() * 100;
   frm.yield = Math.random() * 100;
+  frm.address = `Address of farm ${n}`;
+  frm.lat = Math.random() * 2 - 1 + coord.lat;
+  frm.lng = Math.random() * 2 - 1 + coord.lng;
   return plainToInstance(Farm, frm);
 };
 
 const createUser = async (n: number) => {
   const farmsNo = Math.floor(Math.random() * REQ.maxFarmPerUser + 1);
+  const coord = {
+    lat: Math.random() * 180 - 90,
+    lng: Math.random() * 360 - 180,
+    address: `Address of user ${n}`,
+  };
   const usr: DeepPartial<User> = {
     email: `usr_${n}@foo.bar`,
     hashedPassword: await hashPassword(`password${n}`),
-    farms: range(farmsNo).map(fn => createFarm(fn, n)),
+    address: `Address of user ${n}`,
+    lat: Math.random() * 180 - 90,
+    lng: Math.random() * 360 - 180,
+    farms: range(farmsNo).map(fn => createFarm(fn, n, coord)),
   };
   console.log(`User ${n} has ${farmsNo} farms`);
   return usr;

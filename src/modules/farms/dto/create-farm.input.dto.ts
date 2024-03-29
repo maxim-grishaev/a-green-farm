@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
-import { User } from "../../users/entities/user.entity";
+import { IsNotEmpty, IsNotEmptyObject, IsNumber, IsString, Min, ValidateNested } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { LocationDto } from "../../location/dto/location.dto";
 
 /**
  * @openapi
@@ -14,10 +15,13 @@ import { User } from "../../users/entities/user.entity";
  *          type: number
  *        yield:
  *          type: number
+ *        location:
+ *          $ref: '#/components/schemas/CoordinateDto'
  */
 export class CreateFarmInputDto {
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => String(value).trim())
   public name: string;
 
   @IsNumber()
@@ -28,5 +32,8 @@ export class CreateFarmInputDto {
   @Min(1)
   public yield: number;
 
-  public user: Pick<User, "id">;
+  @IsNotEmptyObject()
+  @ValidateNested()
+  @Type(() => LocationDto)
+  public location: LocationDto;
 }

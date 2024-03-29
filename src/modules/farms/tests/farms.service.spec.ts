@@ -29,12 +29,15 @@ describe("FarmsService", () => {
     user = await ds.getRepository(User).save({
       email: "no@no.no",
       hashedPassword: "xx",
+      address: "address",
+      lat: 0,
+      lng: 0,
     });
     input = {
       name: "Test Farm 1",
       size: 10,
       yield: 200,
-      user: { id: user.id },
+      location: { address: "address", lat: 0, lng: 0 },
     };
   });
 
@@ -43,7 +46,7 @@ describe("FarmsService", () => {
       const repoSaveSpy = jest.spyOn(farmsRepository, "save");
       const repoCreateSpy = jest.spyOn(farmsRepository, "create");
 
-      const result = await farmsService.createFarm(input);
+      const result = await farmsService.createFarm(input, user);
 
       const expectedResult = {
         id: expect.any(String),
@@ -57,7 +60,26 @@ describe("FarmsService", () => {
       };
 
       expect(repoCreateSpy).toBeCalledTimes(1);
-      expect(repoCreateSpy).toBeCalledWith(input);
+      expect(repoCreateSpy.mock.calls[0][0]).toEqual(
+        expect.objectContaining({
+          address: "address",
+          lat: 0,
+          lng: 0,
+          name: "Test Farm 1",
+          size: 10,
+          user: {
+            address: "address",
+            createdAt: expect.any(Date),
+            email: "no@no.no",
+            hashedPassword: expect.any(String),
+            id: expect.any(String),
+            lat: 0,
+            lng: 0,
+            updatedAt: expect.any(Date),
+          },
+          yield: 200,
+        }),
+      );
       expect(repoSaveSpy).toBeCalledTimes(1);
       expect(repoSaveSpy).toBeCalledWith(expectedResult);
       expect(result).toBeInstanceOf(Farm);
@@ -70,7 +92,7 @@ describe("FarmsService", () => {
 
         const repoSpy = jest.spyOn(farmsRepository, "save");
 
-        await expect(farmsService.createFarm(input)).rejects.toThrow(
+        await expect(farmsService.createFarm(input, { id: "123" } as User)).rejects.toThrow(
           new UnprocessableEntityError("A farm with the same name already exists"),
         );
         expect(repoSpy).toBeCalledTimes(1);

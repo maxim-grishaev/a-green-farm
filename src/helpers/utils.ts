@@ -12,15 +12,20 @@ export const clearDatabase = async (ds: DataSource): Promise<void> => {
   await Promise.all(entityMetadatas.map(data => ds.query(`truncate table "${data.tableName}" cascade`)));
 };
 
-export const getErrorMessages = (errors: ValidationError[]): string => {
+export const getErrorMessages = (errors: ValidationError[], prefix: string[] = []): string => {
+  const addPrefix = (msg: string) => prefix.concat(msg).join(".");
   return errors
     .reduce((messages: string[], currentValue: ValidationError) => {
+      if (currentValue.children && currentValue.children.length > 0) {
+        messages.push(getErrorMessages(currentValue.children, prefix.concat(currentValue.property)));
+      }
+
       if (currentValue.constraints == null) {
-        return messages;
+        return prefix ? messages.map(addPrefix) : messages;
       }
 
       Object.values(currentValue.constraints).forEach(value => {
-        messages.push(value);
+        messages.push(addPrefix(value));
       });
 
       return messages;

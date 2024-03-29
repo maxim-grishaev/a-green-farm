@@ -1,4 +1,6 @@
 import { Exclude, Expose, Transform } from "class-transformer";
+import { LocationDto } from "../../location/dto/location.dto";
+import { Farm } from "../entities/farm.entity";
 
 /**
  * @openapi
@@ -19,10 +21,13 @@ import { Exclude, Expose, Transform } from "class-transformer";
  *          type: string
  *        updatedAt:
  *          type: string
+ *        location:
+ *          $ref: '#/components/schemas/CoordinateDto'
  */
 export class CreateFarmOutputDto {
-  constructor(partial?: Partial<CreateFarmOutputDto>) {
-    Object.assign(this, partial);
+  constructor({ address, lat, lng, ...data }: Farm) {
+    this.location = new LocationDto({ address, lat, lng });
+    Object.assign(this, data);
   }
 
   @Expose()
@@ -45,8 +50,10 @@ export class CreateFarmOutputDto {
   @Expose()
   public updatedAt: Date;
 
+  // Just to be safe
   @Exclude()
-  public user: {
-    id: string;
-  };
+  public user: unknown;
+
+  @Expose()
+  public location: LocationDto;
 }

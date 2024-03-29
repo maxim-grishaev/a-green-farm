@@ -10,6 +10,7 @@ import { Farm } from "../entities/farm.entity";
 import { User } from "../../users/entities/user.entity";
 import { hashPassword } from "../../../helpers/password";
 import { LoginUserOutputDto } from "../../auth/dto/login-user.output.dto";
+import { getFarmByDTO } from "../entities/getFarmByDTO";
 
 describe("FarmsController", () => {
   let app: Express;
@@ -43,6 +44,9 @@ describe("FarmsController", () => {
       user = await ds.getRepository(User).save({
         email: "no@no.no",
         hashedPassword: await hashPassword("test"),
+        address: "address",
+        lat: 0,
+        lng: 0,
       });
       const resp = await agent.post("/api/auth/login").send({ email: user.email, password: "test" });
       token = (resp.body as LoginUserOutputDto).token;
@@ -50,7 +54,7 @@ describe("FarmsController", () => {
         name: "Test Farm 1",
         size: 10,
         yield: 200,
-        user: { id: user.id },
+        location: { address: "address", lat: 0, lng: 0 },
       };
     });
 
@@ -80,13 +84,15 @@ describe("FarmsController", () => {
 
       expect(res.statusCode).toBe(201);
       expect(farm).toMatchObject(expectedObject);
-
-      expect(res.body).toMatchObject({ ...expectedObject, createdAt: expect.any(String), updatedAt: expect.any(String) });
+      expect(res.body).toMatchObject({
+        ...expectedObject,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
     });
 
     it("should throw UnprocessableEntityError if farm name already exists", async () => {
-      await ds.getRepository(Farm).save(input);
-
+      await ds.getRepository(Farm).save(getFarmByDTO(input, user));
       const res = await agent.post("/api/farms").send(input).set("authorization", `Bearer ${token}`);
 
       expect(res.statusCode).toBe(422);
