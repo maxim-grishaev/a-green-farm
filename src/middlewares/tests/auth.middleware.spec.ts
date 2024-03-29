@@ -5,11 +5,11 @@ import { Express, Response } from "express";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
 import http from "http";
 import { decode, sign } from "jsonwebtoken";
-import { ExtendedRequest, authMiddleware } from "middlewares/auth.middleware";
+import { RequestWithUser, authMiddleware } from "middlewares/auth.middleware";
 import { AccessToken } from "modules/auth/entities/access-token.entity";
 import { User } from "modules/users/entities/user.entity";
 import { UsersService } from "modules/users/users.service";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import { setupServer } from "server/server";
 import { Repository } from "typeorm";
 
@@ -40,7 +40,7 @@ describe("AuthMiddleware", () => {
   };
 
   beforeAll(async () => {
-    app = setupServer();
+    app = setupServer(ds);
     await ds.initialize();
 
     server = http.createServer(app).listen(config.APP_PORT);
@@ -54,7 +54,7 @@ describe("AuthMiddleware", () => {
   beforeEach(async () => {
     await clearDatabase(ds);
 
-    usersService = new UsersService();
+    usersService = new UsersService(ds);
     accessTokenRepository = ds.getRepository(AccessToken);
   });
 
@@ -62,26 +62,26 @@ describe("AuthMiddleware", () => {
     const user = await usersService.createUser({ email: "user@test.com", password: "pwd" });
     const { token } = await signAsync(user);
 
-    const req = { headers: { authorization: `Bearer ${token}` } } as ExtendedRequest;
+    const req = { headers: { authorization: `Bearer ${token}` } } as RequestWithUser;
 
-    await authMiddleware(req, {} as Response, mockedNext);
+    await authMiddleware(ds)(req, {} as Response, mockedNext);
 
     expect(req.user).toBeDefined();
     expect(req.user).toBeInstanceOf(User);
   });
 
   it("should pass UnauthorizedError to next when auth token is not provided", async () => {
-    const req = { headers: {} } as ExtendedRequest;
+    const req = { headers: {} } as RequestWithUser;
 
-    await authMiddleware(req, {} as Response, mockedNext);
+    await authMiddleware(ds)(req, {} as Response, mockedNext);
     expect(mockedNext).toBeCalledWith(new UnauthorizedError());
     expect(req.user).not.toBeDefined();
   });
 
   it("should pass UnauthorizedError to next when token is not valid", async () => {
-    const req = { headers: { authorization: "Bearer not_valid" } } as ExtendedRequest;
+    const req = { headers: { authorization: "Bearer not_valid" } } as RequestWithUser;
 
-    await authMiddleware(req, {} as Response, mockedNext);
+    await authMiddleware(ds)(req, {} as Response, mockedNext);
     expect(mockedNext).toBeCalledWith(new UnauthorizedError());
     expect(req.user).not.toBeDefined();
   });

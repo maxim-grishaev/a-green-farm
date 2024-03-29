@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
+import { User } from "../../users/entities/user.entity";
 
 /**
  * @openapi
@@ -26,4 +27,6 @@ export class CreateFarmInputDto {
   @IsNumber()
   @Min(1)
   public yield: number;
+
+  public user: Pick<User, "id">;
 }

@@ -4,11 +4,10 @@ import { BadRequestError } from "errors/errors";
 import { Express, Response } from "express";
 import { disconnectAndClearDatabase } from "helpers/utils";
 import http from "http";
-import { ExtendedRequest } from "middlewares/auth.middleware";
+import { RequestWithUser } from "middlewares/auth.middleware";
 import { validateInputMiddleware } from "middlewares/validate-input.middleware";
 import * as validator from "class-validator";
-
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import { setupServer } from "server/server";
 
 const mockedNext = jest.fn();
@@ -18,7 +17,7 @@ describe("ValidateInputMiddleware", () => {
   let app: Express;
 
   beforeAll(async () => {
-    app = setupServer();
+    app = setupServer(ds);
     await ds.initialize();
 
     server = http.createServer(app).listen(config.APP_PORT);
@@ -43,7 +42,7 @@ describe("ValidateInputMiddleware", () => {
         headers: {},
         method: "POST",
         body: { email: " " },
-      } as unknown as ExtendedRequest;
+      } as unknown as RequestWithUser;
 
       const thrownError = new Error("Test error");
       jest.spyOn(validator, "validate").mockRejectedValue(thrownError);
@@ -61,7 +60,7 @@ describe("ValidateInputMiddleware", () => {
           headers: {},
           method: "GET",
           query: { email: true, groupNumber: null },
-        } as unknown as ExtendedRequest;
+        } as unknown as RequestWithUser;
 
         await validateInputMiddleware(TestValidationSchema)(req, {} as Response, mockedNext);
 
@@ -80,7 +79,7 @@ describe("ValidateInputMiddleware", () => {
           headers: {},
           method: "GET",
           query: { email: "aa@bb.com", groupNumber: 1 },
-        } as unknown as ExtendedRequest;
+        } as unknown as RequestWithUser;
 
         await validateInputMiddleware(TestValidationSchema)(req, {} as Response, mockedNext);
 
@@ -99,7 +98,7 @@ describe("ValidateInputMiddleware", () => {
             headers: {},
             method,
             body: { email: true, groupNumber: null },
-          } as unknown as ExtendedRequest;
+          } as unknown as RequestWithUser;
 
           await validateInputMiddleware(TestValidationSchema)(req, {} as Response, mockedNext);
 
@@ -121,7 +120,7 @@ describe("ValidateInputMiddleware", () => {
             headers: {},
             method,
             body: { email: "aa@bb.com", groupNumber: 1 },
-          } as unknown as ExtendedRequest;
+          } as unknown as RequestWithUser;
 
           await validateInputMiddleware(TestValidationSchema)(req, {} as Response, mockedNext);
 

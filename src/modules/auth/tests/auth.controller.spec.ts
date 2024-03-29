@@ -1,7 +1,7 @@
 import config from "config/config";
 import { Express } from "express";
 import http from "http";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import * as supertest from "supertest";
 import * as bcrypt from "bcrypt";
 import { setupServer } from "server/server";
@@ -20,7 +20,7 @@ describe("AuthController", () => {
   const validPassword = "password";
 
   beforeAll(async () => {
-    app = setupServer();
+    app = setupServer(ds);
     await ds.initialize();
 
     server = http.createServer(app).listen(config.APP_PORT);

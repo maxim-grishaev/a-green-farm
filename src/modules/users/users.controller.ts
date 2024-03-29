@@ -3,12 +3,13 @@ import { CreateUserOutputDto } from "./dto/create-user.output.dto";
 import { CreateUserInputDto } from "./dto/create-user.input.dto";
 import { UsersService } from "./users.service";
 import { plainToInstance } from "class-transformer";
+import { DataSource } from "typeorm";
 
 export class UsersController {
   private readonly usersService: UsersService;
 
-  constructor() {
-    this.usersService = new UsersService();
+  constructor(ds: DataSource) {
+    this.usersService = new UsersService(ds);
   }
 
   public async create(req: Request, res: Response, next: NextFunction) {

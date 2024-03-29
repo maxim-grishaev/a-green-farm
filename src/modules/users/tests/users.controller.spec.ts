@@ -3,7 +3,7 @@ import { Express } from "express";
 import { setupServer } from "server/server";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
 import http, { Server } from "http";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import supertest, { SuperAgentTest } from "supertest";
 import { CreateUserInputDto } from "../dto/create-user.input.dto";
 import { UsersService } from "../users.service";
@@ -16,7 +16,7 @@ describe("UsersController", () => {
   let usersService: UsersService;
 
   beforeAll(async () => {
-    app = setupServer();
+    app = setupServer(ds);
     await ds.initialize();
 
     server = http.createServer(app).listen(config.APP_PORT);
@@ -31,7 +31,7 @@ describe("UsersController", () => {
     await clearDatabase(ds);
 
     agent = supertest.agent(app);
-    usersService = new UsersService();
+    usersService = new UsersService(ds);
   });
 
   describe("POST /users", () => {

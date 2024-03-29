@@ -1,12 +1,13 @@
 import { Router } from "express";
-import auth from "./auth.routes";
-import user from "./user.routes";
-import farm from "./farm.routes";
+import { createAuthRouter } from "./auth.routes";
+import { createUsersRouter } from "./user.routes";
+import { createFarmRouter } from "./farm.routes";
+import { DataSource } from "typeorm";
 
-const routes = Router();
-
-routes.use("/auth", auth);
-routes.use("/users", user);
-routes.use("/farms", farm);
-
-export default routes;
+export const createRoutes = (ds: DataSource) => {
+  const routes = Router();
+  routes.use("/auth", createAuthRouter(ds));
+  routes.use("/users", createUsersRouter(ds));
+  routes.use("/farms", createFarmRouter(ds));
+  return routes;
+};

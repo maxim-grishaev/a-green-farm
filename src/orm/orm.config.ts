@@ -13,4 +13,4 @@ const options: DataSourceOptions = {
   database: config.DB_NAME,
 };
 
-export default new DataSource(options);
+export const dataSource = new DataSource(options);

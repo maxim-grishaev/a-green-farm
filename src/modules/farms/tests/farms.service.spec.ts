@@ -1,14 +1,17 @@
 import { UnprocessableEntityError } from "errors/errors";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import { CreateFarmInputDto } from "../dto/create-farm.input.dto";
 import { Farm } from "../entities/farm.entity";
 import { FarmsService } from "../farms.service";
 import { Repository } from "typeorm";
+import { User } from "../../users/entities/user.entity";
 
-describe("UsersController", () => {
+describe("FarmsService", () => {
   let farmsService: FarmsService;
   let farmsRepository: Repository<Farm>;
+  let user: User;
+  let input: CreateFarmInputDto;
 
   beforeAll(async () => {
     await ds.initialize();
@@ -22,16 +25,20 @@ describe("UsersController", () => {
   beforeEach(async () => {
     await clearDatabase(ds);
     jest.clearAllMocks();
-    farmsService = new FarmsService();
-  });
-
-  describe(".createFarm", () => {
-    const input: CreateFarmInputDto = {
+    farmsService = new FarmsService(ds);
+    user = await ds.getRepository(User).save({
+      email: "no@no.no",
+      hashedPassword: "xx",
+    });
+    input = {
       name: "Test Farm 1",
       size: 10,
       yield: 200,
+      user: { id: user.id },
     };
+  });
 
+  describe(".createFarm", () => {
     it("should create new farm", async () => {
       const repoSaveSpy = jest.spyOn(farmsRepository, "save");
       const repoCreateSpy = jest.spyOn(farmsRepository, "create");
@@ -45,6 +52,8 @@ describe("UsersController", () => {
         yield: input.yield,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        user: expect.anything(),
       };
 
       expect(repoCreateSpy).toBeCalledTimes(1);

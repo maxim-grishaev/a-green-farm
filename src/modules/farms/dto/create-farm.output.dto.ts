@@ -1,4 +1,4 @@
-import { Expose, Transform } from "class-transformer";
+import { Exclude, Expose, Transform } from "class-transformer";
 
 /**
  * @openapi
@@ -44,4 +44,9 @@ export class CreateFarmOutputDto {
   @Transform(({ value }) => (value as Date).toISOString())
   @Expose()
   public updatedAt: Date;
+
+  @Exclude()
+  public user: {
+    id: string;
+  };
 }

@@ -1,6 +1,6 @@
 import { UnprocessableEntityError } from "errors/errors";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import { CreateUserInputDto } from "../dto/create-user.input.dto";
 import { User } from "../entities/user.entity";
 import { UsersService } from "../users.service";
@@ -18,7 +18,7 @@ describe("UsersService", () => {
 
   beforeEach(async () => {
     await clearDatabase(ds);
-    usersService = new UsersService();
+    usersService = new UsersService(ds);
   });
 
   describe(".createUser", () => {

@@ -3,7 +3,7 @@ import { UnprocessableEntityError } from "errors/errors";
 import { Express } from "express";
 import { setupServer } from "server/server";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import * as bcrypt from "bcrypt";
 import { AuthService } from "../auth.service";
 import { LoginUserInputDto } from "../dto/login-user.input.dto";
@@ -20,7 +20,7 @@ describe("AuthService", () => {
   const validPassword = "password";
 
   beforeAll(async () => {
-    app = setupServer();
+    app = setupServer(ds);
     await ds.initialize();
 
     salt = await bcrypt.genSalt(config.SALT_ROUNDS);
@@ -37,7 +37,7 @@ describe("AuthService", () => {
   beforeEach(async () => {
     await clearDatabase(ds);
 
-    authService = new AuthService();
+    authService = new AuthService(ds);
   });
 
   describe(".login", () => {

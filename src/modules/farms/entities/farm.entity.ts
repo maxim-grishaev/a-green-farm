@@ -1,11 +1,22 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from "typeorm";
+import { User } from "../../users/entities/user.entity";
 
+@Unique(["name", "user"])
 @Entity()
 export class Farm {
   @PrimaryGeneratedColumn("uuid")
   public readonly id: string;
 
-  @Column({ unique: true })
+  @Column({ type: "varchar" })
   public name: string;
 
   @Column({ type: "float" })
@@ -13,6 +24,13 @@ export class Farm {
 
   @Column({ type: "float" })
   public size: number;
+
+  @ManyToOne(() => User, user => user.farms, {
+    orphanedRowAction: "delete",
+    nullable: false,
+  })
+  @JoinColumn({ name: "userId" })
+  public user: User;
 
   @CreateDateColumn()
   public createdAt: Date;

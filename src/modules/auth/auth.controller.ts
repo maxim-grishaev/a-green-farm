@@ -3,12 +3,13 @@ import { AuthService } from "./auth.service";
 import { LoginUserInputDto } from "./dto/login-user.input.dto";
 import { LoginUserOutputDto } from "./dto/login-user.output.dto";
 import { plainToInstance } from "class-transformer";
+import { DataSource } from "typeorm";
 
 export class AuthController {
   private readonly authService: AuthService;
 
-  constructor() {
-    this.authService = new AuthService();
+  constructor(ds: DataSource) {
+    this.authService = new AuthService(ds);
   }
 
   public async login(req: Request, res: Response, next: NextFunction) {

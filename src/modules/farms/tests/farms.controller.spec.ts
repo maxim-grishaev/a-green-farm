@@ -3,10 +3,13 @@ import { Express } from "express";
 import { setupServer } from "server/server";
 import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
 import http, { Server } from "http";
-import ds from "orm/orm.config";
+import { dataSource as ds } from "orm/orm.config";
 import supertest, { SuperAgentTest } from "supertest";
 import { CreateFarmInputDto } from "../dto/create-farm.input.dto";
 import { Farm } from "../entities/farm.entity";
+import { User } from "../../users/entities/user.entity";
+import { hashPassword } from "../../../helpers/password";
+import { LoginUserOutputDto } from "../../auth/dto/login-user.output.dto";
 
 describe("FarmsController", () => {
   let app: Express;
@@ -14,7 +17,7 @@ describe("FarmsController", () => {
   let server: Server;
 
   beforeAll(async () => {
-    app = setupServer();
+    app = setupServer(ds);
     await ds.initialize();
 
     server = http.createServer(app).listen(config.APP_PORT);
@@ -32,16 +35,39 @@ describe("FarmsController", () => {
   });
 
   describe("POST /farms", () => {
-    const input: CreateFarmInputDto = {
-      name: "Test Farm 1",
-      size: 10,
-      yield: 200,
-    };
+    let user: User;
+    let input: CreateFarmInputDto;
+    let token: string;
 
-    it("should create new farm", async () => {
+    beforeEach(async () => {
+      user = await ds.getRepository(User).save({
+        email: "no@no.no",
+        hashedPassword: await hashPassword("test"),
+      });
+      const resp = await agent.post("/api/auth/login").send({ email: user.email, password: "test" });
+      token = (resp.body as LoginUserOutputDto).token;
+      input = {
+        name: "Test Farm 1",
+        size: 10,
+        yield: 200,
+        user: { id: user.id },
+      };
+    });
+
+    it("should not accept unauthorised", async () => {
       const res = await agent.post("/api/farms").send(input);
 
-      const farm = await ds.getRepository(Farm).findOne({ where: { name: input.name } });
+      expect(res.statusCode).toBe(401);
+      expect(res.body).toMatchObject({
+        name: "UnauthorizedError",
+        message: "Unauthorized",
+      });
+    });
+
+    it("should create new farm", async () => {
+      const res = await agent.post("/api/farms").send(input).set("authorization", `Bearer ${token}`);
+
+      const farm = await ds.getRepository(Farm).findOne({ where: { name: input.name, user: { id: user.id } } });
 
       const expectedObject = {
         id: expect.any(String),
@@ -61,7 +87,7 @@ describe("FarmsController", () => {
     it("should throw UnprocessableEntityError if farm name already exists", async () => {
       await ds.getRepository(Farm).save(input);
 
-      const res = await agent.post("/api/farms").send(input);
+      const res = await agent.post("/api/farms").send(input).set("authorization", `Bearer ${token}`);
 
       expect(res.statusCode).toBe(422);
       expect(res.body).toMatchObject({
@@ -71,7 +97,10 @@ describe("FarmsController", () => {
     });
 
     it("should throw BadRequestError if invalid inputs are provided", async () => {
-      const res = await agent.post("/api/farms").send({ ...input, size: -1 });
+      const res = await agent
+        .post("/api/farms")
+        .send({ ...input, size: -1 })
+        .set("authorization", `Bearer ${token}`);
 
       expect(res.statusCode).toBe(400);
       expect(res.body).toMatchObject({

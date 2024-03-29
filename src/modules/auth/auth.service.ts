@@ -1,21 +1,20 @@
-import * as bcrypt from "bcrypt";
 import config from "config/config";
 import { fromUnixTime } from "date-fns";
 import { UnprocessableEntityError } from "errors/errors";
 import { decode, sign } from "jsonwebtoken";
 import { UsersService } from "modules/users/users.service";
-import dataSource from "orm/orm.config";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { LoginUserInputDto } from "./dto/login-user.input.dto";
 import { AccessToken } from "./entities/access-token.entity";
+import { comparePasswords } from "../../helpers/password";
 
 export class AuthService {
   private readonly accessTokenRepository: Repository<AccessToken>;
   private readonly usersService: UsersService;
 
-  constructor() {
-    this.accessTokenRepository = dataSource.getRepository(AccessToken);
-    this.usersService = new UsersService();
+  constructor(ds: DataSource) {
+    this.accessTokenRepository = ds.getRepository(AccessToken);
+    this.usersService = new UsersService(ds);
   }
 
   public async login(data: LoginUserInputDto): Promise<AccessToken> {
@@ -56,6 +55,6 @@ export class AuthService {
   }
 
   private async validatePassword(password: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(password, hashedPassword);
+    return comparePasswords(password, hashedPassword);
   }
 }
