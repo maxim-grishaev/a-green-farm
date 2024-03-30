@@ -20,7 +20,6 @@ export class FarmsService {
     }
 
     const newFarm = this.farmsRepository.create(getFarmByDTO(data, user));
-
     return this.farmsRepository.save(newFarm);
   }
 }

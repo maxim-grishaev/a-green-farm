@@ -2,7 +2,7 @@ import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { BadRequestError } from "errors/errors";
 import { NextFunction, Request, Response } from "express";
-import { getErrorMessages } from "helpers/utils";
+import { getErrorMessages } from "helpers/getErrorMessages";
 
 export function validateInputMiddleware(validationSchema: ClassConstructor<object>) {
   return async (req: Request, _: Response, next: NextFunction): Promise<void> => {
@@ -18,7 +18,7 @@ export function validateInputMiddleware(validationSchema: ClassConstructor<objec
       const validationErrors = await validate(plainToInstance(validationSchema, input));
 
       if (validationErrors.length > 0) {
-        const messages = getErrorMessages(validationErrors);
+        const messages = getErrorMessages(validationErrors).join(", ");
 
         next(new BadRequestError(messages));
         return;
