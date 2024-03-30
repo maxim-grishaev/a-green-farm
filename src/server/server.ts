@@ -4,16 +4,16 @@ import { handleErrorMiddleware } from "middlewares/error-handler.middleware";
 import { createRoutes } from "routes";
 import { DataSource } from "typeorm";
 
-export function setupServer(ds: DataSource): Express {
+export const setupServer = async (ds: DataSource): Promise<Express> => {
   const app = express();
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use("/api", createRoutes(ds));
-
+  await ds.initialize();
+  app.use("/api", await createRoutes(ds));
   app.use(handleErrorMiddleware);
 
   swaggerDocs(app);
   return app;
-}
+};

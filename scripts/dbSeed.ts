@@ -64,7 +64,7 @@ const main = async () => {
   await db.user.save(users, { chunk: 10_000 });
 
   await db.close();
-  console.log(`Done!`);
+  console.log(`Done! DB ${db.dataSource.options.database} seeded with ${users.length} users and their farms`);
 };
 
 void main();

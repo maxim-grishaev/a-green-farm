@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsNotEmptyObject, IsString, ValidateNested } from "class-validator";
 import { LocationDto } from "../../location/dto/location.dto";
-import { Type } from "class-transformer";
+import { Type, plainToInstance } from "class-transformer";
 
 /**
  * @openapi
@@ -11,6 +11,7 @@ import { Type } from "class-transformer";
  *      required:
  *        - email
  *        - password
+ *        - location
  *      properties:
  *        email:
  *          type: string
@@ -19,9 +20,11 @@ import { Type } from "class-transformer";
  *          type: string
  *          default: password
  *        location:
- *          $ref: '#/components/schemas/CoordinateDto'
+ *          $ref: '#/components/schemas/LocationDto'
  */
 export class CreateUserInputDto {
+  public static fromPlain = (data: unknown) => plainToInstance(CreateUserInputDto, data);
+
   @IsEmail()
   @IsNotEmpty()
   public email: string;

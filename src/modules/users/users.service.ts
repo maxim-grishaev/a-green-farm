@@ -3,6 +3,13 @@ import { DataSource, FindOptionsWhere } from "typeorm";
 import { CreateUserInputDto } from "./dto/create-user.input.dto";
 import { User } from "./entities/user.entity";
 import { getUserByDTO } from "./entities/getUserByDTO";
+import { comparePasswords } from "../../helpers/password";
+
+const assertCred: (cond: unknown) => asserts cond = cond => {
+  if (!cond) {
+    throw new UnprocessableEntityError("Invalid user email or password");
+  }
+};
 
 export class UsersService {
   constructor(ds: DataSource, private readonly usersRepository = ds.getRepository(User)) {}
@@ -17,7 +24,17 @@ export class UsersService {
     return this.usersRepository.save(newUser);
   }
 
-  public async findOneBy(param: FindOptionsWhere<User>): Promise<User | null> {
+  private async findOneBy(param: FindOptionsWhere<User>): Promise<User | null> {
     return this.usersRepository.findOneBy({ ...param });
+  }
+
+  public async validatePassword(email: string, password: string): Promise<User> {
+    const user = await this.findOneBy({ email });
+    assertCred(user !== null);
+
+    const isValidPassword = await comparePasswords(password, user.hashedPassword);
+    assertCred(isValidPassword);
+
+    return user;
   }
 }

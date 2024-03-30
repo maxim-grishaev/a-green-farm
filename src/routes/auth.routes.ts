@@ -1,8 +1,9 @@
-import { RequestHandler, Router } from "express";
+import { Router } from "express";
 import { validateInputMiddleware } from "middlewares/validate-input.middleware";
 import { AuthController } from "modules/auth/auth.controller";
 import { LoginUserInputDto } from "modules/auth/dto/login-user.input.dto";
 import { DataSource } from "typeorm";
+import { asAsyncRoute } from "../helpers/utils";
 
 export const createAuthRouter = (ds: DataSource) => {
   const router = Router();
@@ -30,10 +31,22 @@ export const createAuthRouter = (ds: DataSource) => {
    *              $ref: '#/components/schemas/LoginUserOutputDto'
    *      400:
    *        description: Bad request
+   *        content:
+   *          application/json:
+   *            schema:
+   *              $ref: '#/components/schemas/ErrorOutputDto'
    *      422:
    *        description: Unprocessable Entity
+   *        content:
+   *          application/json:
+   *            schema:
+   *              $ref: '#/components/schemas/ErrorOutputDto'
    */
-  router.post("/login", validateInputMiddleware(LoginUserInputDto), authController.login.bind(authController) as RequestHandler);
+  router.post(
+    "/login",
+    validateInputMiddleware(LoginUserInputDto),
+    asAsyncRoute(req => authController.login(req)),
+  );
 
   return router;
 };

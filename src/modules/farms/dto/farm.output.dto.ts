@@ -1,16 +1,17 @@
 import { Exclude, Expose, Transform } from "class-transformer";
-import { LocationDto } from "../../location/dto/location.dto";
 import { Farm } from "../entities/farm.entity";
+import { createAsPlain } from "../../../helpers/utils";
 
 /**
  * @openapi
  * components:
  *  schemas:
- *    CreateFarmOutputDto:
+ *    FarmOutputDto:
  *      type: object
  *      properties:
  *        id:
  *          type: string
+ *          example: 5f4b6f3b-3b7b-4b7b-8b3b-7b3b7b3b7b3b
  *        name:
  *          type: string
  *        size:
@@ -19,14 +20,25 @@ import { Farm } from "../entities/farm.entity";
  *          type: number
  *        createdAt:
  *          type: string
+ *          format: date-time
+ *          example: 2021-08-31T12:00:00.000Z
  *        updatedAt:
  *          type: string
- *        location:
- *          $ref: '#/components/schemas/CoordinateDto'
+ *          format: date-time
+ *          example: 2021-08-31T12:00:00.000Z
+ *        owner:
+ *          type: string
+ *          example: no@no.no
+ *        address:
+ *          type: string
  */
-export class CreateFarmOutputDto {
-  constructor({ address, lat, lng, ...data }: Farm) {
-    this.location = new LocationDto({ address, lat, lng });
+export class FarmOutputDto {
+  @Exclude()
+  @Exclude()
+  public static asPlain = createAsPlain(FarmOutputDto);
+
+  constructor({ user, ...data }: Farm) {
+    this.owner = user.email;
     Object.assign(this, data);
   }
 
@@ -50,10 +62,15 @@ export class CreateFarmOutputDto {
   @Expose()
   public updatedAt: Date;
 
-  // Just to be safe
-  @Exclude()
-  public user: unknown;
+  @Expose()
+  public owner: string;
 
   @Expose()
-  public location: LocationDto;
+  public address: string;
+
+  @Exclude()
+  public lat: number;
+
+  @Exclude()
+  public lng: number;
 }

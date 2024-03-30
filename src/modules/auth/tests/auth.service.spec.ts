@@ -20,8 +20,7 @@ describe("AuthService", () => {
   const validPassword = "password";
 
   beforeAll(async () => {
-    app = setupServer(ds);
-    await ds.initialize();
+    app = await setupServer(ds);
 
     salt = await bcrypt.genSalt(config.SALT_ROUNDS);
     hashedPassword = await bcrypt.hash(validPassword, salt);

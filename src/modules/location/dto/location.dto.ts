@@ -5,11 +5,12 @@ import { IsNotEmpty, IsNumber, IsString } from "class-validator";
  * @openapi
  * components:
  *  schemas:
- *    CoordinateDto:
+ *    LocationDto:
  *      type: object
  *      required:
  *        - lat
  *        - lng
+ *        - address
  *      properties:
  *       lat:
  *         type: number

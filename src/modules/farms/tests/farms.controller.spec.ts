@@ -9,7 +9,7 @@ import { CreateFarmInputDto } from "../dto/create-farm.input.dto";
 import { Farm } from "../entities/farm.entity";
 import { User } from "../../users/entities/user.entity";
 import { hashPassword } from "../../../helpers/password";
-import { LoginUserOutputDto } from "../../auth/dto/login-user.output.dto";
+import { TokenOutputDto } from "../../auth/dto/token.output.dto";
 import { getFarmByDTO } from "../entities/getFarmByDTO";
 
 describe("FarmsController", () => {
@@ -18,8 +18,7 @@ describe("FarmsController", () => {
   let server: Server;
 
   beforeAll(async () => {
-    app = setupServer(ds);
-    await ds.initialize();
+    app = await setupServer(ds);
 
     server = http.createServer(app).listen(config.APP_PORT);
   });
@@ -49,7 +48,7 @@ describe("FarmsController", () => {
         lng: 0,
       });
       const resp = await agent.post("/api/auth/login").send({ email: user.email, password: "test" });
-      token = (resp.body as LoginUserOutputDto).token;
+      token = (resp.body as TokenOutputDto).token;
       input = {
         name: "Test Farm 1",
         size: 10,

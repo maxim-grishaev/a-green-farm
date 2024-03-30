@@ -1,33 +1,19 @@
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { BadRequestError } from "errors/errors";
-import { NextFunction, Request, Response } from "express";
+import { Request } from "express";
 import { getErrorMessages } from "helpers/getErrorMessages";
+import { asAsyncMiddleware } from "../helpers/utils";
 
-export function validateInputMiddleware(validationSchema: ClassConstructor<object>) {
-  return async (req: Request, _: Response, next: NextFunction): Promise<void> => {
-    try {
-      let input: unknown;
+export const validateInputMiddleware = (validationSchema: ClassConstructor<object>) =>
+  asAsyncMiddleware(async (req: Request) => {
+    const input: unknown = req.method === "GET" ? req.query : req.body;
 
-      if (req.method === "GET") {
-        input = req.query;
-      } else {
-        input = req.body;
-      }
-
-      const validationErrors = await validate(plainToInstance(validationSchema, input));
-
-      if (validationErrors.length > 0) {
-        const messages = getErrorMessages(validationErrors).join(", ");
-
-        next(new BadRequestError(messages));
-        return;
-      }
-
-      next();
-    } catch (error) {
-      next(error);
+    const validationErrors = await validate(plainToInstance(validationSchema, input));
+    if (validationErrors.length === 0) {
       return;
     }
-  };
-}
+
+    const messages = getErrorMessages(validationErrors).join(", ");
+    throw new BadRequestError(messages);
+  });

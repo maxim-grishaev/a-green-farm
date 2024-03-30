@@ -1,3 +1,4 @@
+import { plainToInstance } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 /**
@@ -18,6 +19,8 @@ import { IsEmail, IsNotEmpty, IsString } from "class-validator";
  *          default: password
  */
 export class LoginUserInputDto {
+  public static fromPlain = (data: unknown) => plainToInstance(LoginUserInputDto, data);
+
   @IsEmail()
   @IsNotEmpty()
   public email: string;

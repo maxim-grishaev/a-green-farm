@@ -19,8 +19,7 @@ describe("AuthController", () => {
   const validPassword = "password";
 
   beforeAll(async () => {
-    app = setupServer(ds);
-    await ds.initialize();
+    app = await setupServer(ds);
 
     server = http.createServer(app).listen(config.APP_PORT);
 

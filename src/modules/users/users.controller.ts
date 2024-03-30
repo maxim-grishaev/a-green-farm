@@ -1,20 +1,15 @@
-import { NextFunction, Response } from "express";
+import { Request } from "express";
 import { DataSource } from "typeorm";
 import { CreateUserInputDto } from "./dto/create-user.input.dto";
-import { CreateUserOutputDto } from "./dto/create-user.output.dto";
 import { UsersService } from "./users.service";
-import { ValidatedBody } from "../../helpers/req";
-import { respondWithSchema } from "../../helpers/utils";
+import { UserOutputDto } from "./dto/user.output.dto";
 
 export class UsersController {
   constructor(ds: DataSource, private readonly usersService = new UsersService(ds)) {}
 
-  public async create(req: ValidatedBody<CreateUserInputDto>, res: Response, next: NextFunction) {
-    try {
-      const user = await this.usersService.createUser(req.body);
-      respondWithSchema(res, new CreateUserOutputDto(user));
-    } catch (error) {
-      next(error);
-    }
+  public async create(req: Request) {
+    const cuid = CreateUserInputDto.fromPlain(req.body);
+    const user = await this.usersService.createUser(cuid);
+    return UserOutputDto.asPlain(user);
   }
 }

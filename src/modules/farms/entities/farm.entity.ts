@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -17,9 +18,11 @@ export class Farm extends WithLocation {
   @PrimaryGeneratedColumn("uuid")
   public readonly id: string;
 
+  @Index("name-idx")
   @Column({ type: "varchar" })
   public name: string;
 
+  @Index("yield-idx")
   @Column({ type: "float" })
   public yield: number;
 
@@ -35,6 +38,7 @@ export class Farm extends WithLocation {
   @CreateDateColumn()
   public createdAt: Date;
 
+  @Index("date-idx")
   @UpdateDateColumn()
   public updatedAt: Date;
 }

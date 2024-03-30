@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNotEmptyObject, IsNumber, IsString, Min, ValidateNested } from "class-validator";
-import { Transform, Type } from "class-transformer";
+import { Transform, Type, plainToInstance } from "class-transformer";
 import { LocationDto } from "../../location/dto/location.dto";
 
 /**
@@ -8,6 +8,11 @@ import { LocationDto } from "../../location/dto/location.dto";
  *  schemas:
  *    CreateFarmInputDto:
  *      type: object
+ *      required:
+ *       - name
+ *       - size
+ *       - yield
+ *       - location
  *      properties:
  *        name:
  *          type: string
@@ -16,9 +21,11 @@ import { LocationDto } from "../../location/dto/location.dto";
  *        yield:
  *          type: number
  *        location:
- *          $ref: '#/components/schemas/CoordinateDto'
+ *          $ref: '#/components/schemas/LocationDto'
  */
 export class CreateFarmInputDto {
+  public static fromPlain = (data: unknown) => plainToInstance(CreateFarmInputDto, data);
+
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => String(value).trim())

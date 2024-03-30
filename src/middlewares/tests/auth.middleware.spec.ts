@@ -40,8 +40,7 @@ describe("AuthMiddleware", () => {
   };
 
   beforeAll(async () => {
-    app = setupServer(ds);
-    await ds.initialize();
+    app = await setupServer(ds);
 
     server = http.createServer(app).listen(config.APP_PORT);
   });
@@ -84,6 +83,49 @@ describe("AuthMiddleware", () => {
 
   it("should pass UnauthorizedError to next when token is not valid", async () => {
     const req = { headers: { authorization: "Bearer not_valid" } } as RequestWithUser;
+
+    await authMiddleware(ds)(req, {} as Response, mockedNext);
+    expect(mockedNext).toBeCalledWith(new UnauthorizedError());
+    expect(req.user).not.toBeDefined();
+  });
+
+  it("should pass UnauthorizedError to next when token is valid but not found", async () => {
+    const user = await usersService.createUser({
+      email: "no@no.no",
+      password: "pwd",
+      location: { address: "x", lat: 0, lng: 0 },
+    });
+    const token = sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      config.JWT_SECRET,
+      { expiresIn: config.JWT_EXPIRES_AT },
+    );
+
+    const req = { headers: { authorization: `Bearer ${token}` } } as RequestWithUser;
+
+    await authMiddleware(ds)(req, {} as Response, mockedNext);
+    expect(mockedNext).toBeCalledWith(new UnauthorizedError());
+  });
+
+  it("should pass UnauthorizedError to next when token is expired", async () => {
+    const user = await usersService.createUser({
+      email: "no@no.no",
+      password: "pwd",
+      location: { address: "x", lat: 0, lng: 0 },
+    });
+    const token = sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      config.JWT_SECRET,
+      { expiresIn: -1 },
+    );
+
+    const req = { headers: { authorization: `Bearer ${token}` } } as RequestWithUser;
 
     await authMiddleware(ds)(req, {} as Response, mockedNext);
     expect(mockedNext).toBeCalledWith(new UnauthorizedError());

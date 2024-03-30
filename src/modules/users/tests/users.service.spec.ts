@@ -47,23 +47,23 @@ describe("UsersService", () => {
     });
   });
 
-  describe(".findOneBy", () => {
-    const createUserDto: CreateUserInputDto = {
-      email: "user@test.com",
-      password: "password",
-      location: { address: "address", lat: 0, lng: 0 },
-    };
+  // describe(".findOneBy", () => {
+  //   const createUserDto: CreateUserInputDto = {
+  //     email: "user@test.com",
+  //     password: "password",
+  //     location: { address: "address", lat: 0, lng: 0 },
+  //   };
 
-    it("should get user by provided param", async () => {
-      const user = await usersService.createUser(createUserDto);
-      const foundUser = await usersService.findOneBy({ email: user?.email });
+  //   it("should get user by provided param", async () => {
+  //     const user = await usersService.createUser(createUserDto);
+  //     const foundUser = await usersService.findOneBy({ email: user?.email });
 
-      expect(foundUser).toMatchObject({ ...user });
-    });
+  //     expect(foundUser).toMatchObject({ ...user });
+  //   });
 
-    it("should return null if user not found by provided param", async () => {
-      const foundUser = await usersService.findOneBy({ email: "notFound@mail.com" });
-      expect(foundUser).toBeNull();
-    });
-  });
+  //   it("should return null if user not found by provided param", async () => {
+  //     const foundUser = await usersService.findOneBy({ email: "notFound@mail.com" });
+  //     expect(foundUser).toBeNull();
+  //   });
+  // });
 });

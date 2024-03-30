@@ -5,11 +5,9 @@ import { dataSource } from "orm/orm.config";
 import { setupServer } from "./server/server";
 
 async function bootstrap(): Promise<http.Server> {
-  const app = setupServer(dataSource);
+  const app = await setupServer(dataSource);
 
-  await dataSource.initialize();
   const port = config.APP_PORT;
-
   app.get("/", (_, res: Response) => {
     res.send(`Listening on port: ${port}`);
   });
