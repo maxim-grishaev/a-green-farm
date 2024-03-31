@@ -29,6 +29,7 @@
   "author": "Agreena",
   "license": "ISC",
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.3.42",
     "bcrypt": "^5.1.0",
     "cache-manager": "^5.4.0",
     "class-transformer": "^0.5.1",

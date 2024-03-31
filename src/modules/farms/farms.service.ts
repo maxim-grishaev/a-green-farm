@@ -1,13 +1,21 @@
-import { DataSource } from "typeorm";
+import { DataSource, Point } from "typeorm";
 import { CreateFarmInputDto } from "./dto/create-farm.input.dto";
 import { Farm } from "./entities/farm.entity";
 import { UnprocessableEntityError } from "errors/errors";
 import { User } from "../users/entities/user.entity";
 import { createFarmByDTO } from "./entities/getFarmByDTO";
 import { Outliers, QueryFarmsInputDto } from "./dto/query-farm.input.dto";
+import { Client, LatLng, TravelMode } from "@googlemaps/google-maps-services-js";
+import config from "config/config";
 
 const QUERY_LIMIT = 100;
 const OUTLIER_THRESHOLD = 0.3;
+
+const gmsClient = new Client({});
+const getCoord = (point: Point): LatLng => ({
+  lat: point.coordinates[0],
+  lng: point.coordinates[1],
+});
 
 export class FarmsService {
   #yieldAvg: number;
@@ -47,7 +55,7 @@ export class FarmsService {
     return farm;
   }
 
-  public async fetchAll(query: QueryFarmsInputDto, user: User): Promise<Array<Farm>> {
+  public async selectFarms(query: QueryFarmsInputDto, user: User): Promise<Array<Farm>> {
     const sqlQuery = this.farmsRepository
       .createQueryBuilder("farm")
       .select()
@@ -76,6 +84,22 @@ export class FarmsService {
 
     const farms = await sqlQuery.getMany();
 
+    return farms;
+  }
+
+  public async fetchAll(query: QueryFarmsInputDto, user: User): Promise<Array<Farm>> {
+    const farms = await this.selectFarms(query, user);
+
+    const farms25 = farms.slice(0, 25);
+    const resp = await gmsClient.distancematrix({
+      params: {
+        key: config.GOOGLE_MAPS_API_KEY,
+        origins: [{ lat: 50, lng: 10 }],
+        destinations: farms25.map(f => f.coord).map(getCoord),
+        mode: TravelMode.driving,
+      },
+    });
+    console.log("Google resp", resp.data.rows[0].elements);
     return farms;
   }
 }

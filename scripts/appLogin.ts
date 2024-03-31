@@ -17,9 +17,9 @@ const main = async () => {
     email,
     password,
     location: {
-      lat: 0,
-      lng: 0,
-      address: "123",
+      lat: 50,
+      lng: 10,
+      address: "Somewhere in Europe",
     },
   });
   if (!userResp.ok) {
