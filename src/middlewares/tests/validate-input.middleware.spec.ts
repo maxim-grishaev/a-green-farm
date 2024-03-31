@@ -2,7 +2,7 @@ import { IsEmail, IsNotEmpty, IsNumber, Min } from "class-validator";
 import config from "config/config";
 import { BadRequestError } from "errors/errors";
 import { Express, Response } from "express";
-import { disconnectAndClearDatabase } from "helpers/utils";
+import { disconnectAndClearDatabase } from "helpers/db";
 import http from "http";
 import { RequestWithUser } from "middlewares/auth.middleware";
 import { validateInputMiddleware } from "middlewares/validate-input.middleware";

@@ -1,7 +1,7 @@
-import { LocationDto, getLocationDtoByPoint } from "../../location/dto/location.dto";
 import { Exclude, Expose, Transform } from "class-transformer";
+import { LocationDto, getLocationDtoByPoint } from "../../location/dto/location.dto";
 import { User } from "../entities/user.entity";
-import { createAsPlain } from "../../../helpers/utils";
+import { createSanitizer } from "../../../helpers/createSanitizer";
 
 /**
  * @openapi
@@ -52,4 +52,4 @@ export class UserOutputDto {
   public farms: unknown[];
 }
 
-export const asPlainUser = createAsPlain(UserOutputDto);
+export const asPlainUser = createSanitizer(UserOutputDto);

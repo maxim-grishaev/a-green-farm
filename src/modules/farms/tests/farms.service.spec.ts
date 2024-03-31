@@ -1,5 +1,5 @@
 import { UnprocessableEntityError } from "errors/errors";
-import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
+import { clearDatabase, disconnectAndClearDatabase } from "helpers/db";
 import { dataSource as ds } from "orm/orm.config";
 import { CreateFarmInputDto } from "../dto/create-farm.input.dto";
 import { Farm } from "../entities/farm.entity";
@@ -7,6 +7,7 @@ import { FarmsService } from "../farms.service";
 import { User } from "../../users/entities/user.entity";
 import { createFarmByDTO } from "../entities/getFarmByDTO";
 import { getPointByCoord } from "../../location/dto/location.dto";
+import { QueryFarmsInputDto } from "../dto/query-farm.input.dto";
 
 describe("FarmsService", () => {
   let farmsService: FarmsService;
@@ -99,6 +100,60 @@ describe("FarmsService", () => {
           new UnprocessableEntityError("A farm with the same name already exists"),
         );
         expect(repoSaveSpy).toBeCalledTimes(0);
+      });
+    });
+  });
+
+  describe(".fetchAll", () => {
+    // it("should fetch all farms with no params (limit: 100)", async () => {
+    // });
+
+    it("should sort by name", async () => {
+      await farmsRepository.save(createFarmByDTO({ ...input, name: "BBBB" }, user));
+      await farmsRepository.save(createFarmByDTO({ ...input, name: "AAAA" }, user));
+
+      const result = await farmsService.fetchAll(QueryFarmsInputDto.fromPlain({ sortBy: "name" }), user);
+
+      expect(result).toHaveLength(2);
+      expect(result.map(it => it.name)).toEqual(["AAAA", "BBBB"]);
+    });
+
+    it("should sort by date", async () => {
+      const farm1 = await farmsRepository.save(createFarmByDTO({ ...input, name: "a" }, user));
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const farm2 = await farmsRepository.save(createFarmByDTO({ ...input, name: "b" }, user));
+      await farmsRepository.save({ name: "a2", id: farm1.id });
+
+      // Check it's not sorted by name
+      const resultD = await farmsService.fetchAll(QueryFarmsInputDto.fromPlain({ sortBy: "date" }), user);
+      expect(resultD).toHaveLength(2);
+      expect(resultD.map(it => it.id)).toEqual([farm2.id, farm1.id]);
+      expect(resultD.map(it => it.name)).toEqual(["b", "a2"]);
+    });
+
+    describe("outliers filter (yield less than threshold)", () => {
+      it.each([
+        ["1", ["a"]],
+        ["true", ["a"]],
+        ["0", ["b", "c"]],
+        ["false", ["b", "c"]],
+        [undefined, ["a", "b", "c"]],
+      ])("should filter outliers: if outliers=%p, result: %p", async (outliers, exp) => {
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "a", yield: 10 }, user));
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "b", yield: 200 }, user));
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "c", yield: 300 }, user));
+
+        const result = await farmsService.fetchAll(QueryFarmsInputDto.fromPlain({ outliers, sortBy: "name" }), user);
+
+        expect(result.map(it => it.name)).toEqual(exp);
+      });
+    });
+
+    describe("if sortBy is driving_distance", () => {
+      it("should throw UnprocessableEntityError", async () => {
+        await expect(farmsService.fetchAll({ sortBy: "driving_distance" }, user)).rejects.toThrow(
+          new UnprocessableEntityError("Sort by driving_distance is not implemented"),
+        );
       });
     });
   });

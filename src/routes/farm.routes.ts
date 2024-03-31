@@ -5,7 +5,7 @@ import { FarmsController } from "modules/farms/farms.controller";
 import { DataSource } from "typeorm";
 import { RequestWithUser, authMiddleware } from "../middlewares/auth.middleware";
 import { QueryFarmsInputDto } from "../modules/farms/dto/query-farm.input.dto";
-import { asAsyncRoute } from "../helpers/utils";
+import { asAsyncRoute } from "../helpers/asAsyncMiddleware";
 
 export const createFarmRouter = async (ds: DataSource) => {
   const router = Router();

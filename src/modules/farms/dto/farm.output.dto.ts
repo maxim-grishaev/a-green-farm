@@ -1,6 +1,6 @@
 import { Exclude, Expose, Transform } from "class-transformer";
 import { Farm } from "../entities/farm.entity";
-import { createAsPlain } from "../../../helpers/utils";
+import { createSanitizer } from "../../../helpers/createSanitizer";
 import { getLocationDtoByPoint } from "../../location/dto/location.dto";
 
 /**
@@ -76,4 +76,4 @@ export class FarmOutputDto {
   public lng: number;
 }
 
-export const asPlainFarm = createAsPlain(FarmOutputDto);
+export const asPlainFarm = createSanitizer(FarmOutputDto);

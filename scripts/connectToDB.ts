@@ -1,4 +1,4 @@
-import { clearDatabase } from "../src/helpers/utils";
+import { clearDatabase } from "../src/helpers/db";
 import { AccessToken } from "../src/modules/auth/entities/access-token.entity";
 import { Farm } from "../src/modules/farms/entities/farm.entity";
 import { User } from "../src/modules/users/entities/user.entity";

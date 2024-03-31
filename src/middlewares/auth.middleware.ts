@@ -5,7 +5,7 @@ import { JwtPayload, verify } from "jsonwebtoken";
 import { AuthService } from "modules/auth/auth.service";
 import { DataSource } from "typeorm";
 import { User } from "../modules/users/entities/user.entity";
-import { asAsyncMiddleware } from "../helpers/utils";
+import { asAsyncMiddleware } from "../helpers/asAsyncMiddleware";
 
 export interface RequestWithUser extends Request {
   user: User;

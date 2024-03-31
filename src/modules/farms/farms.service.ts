@@ -27,6 +27,10 @@ export class FarmsService {
     this.#yieldAvg = avg;
   }
 
+  public getAvgYield(): number {
+    return this.#yieldAvg;
+  }
+
   public async createFarm(data: CreateFarmInputDto, user: User): Promise<Farm> {
     const existingFarm = await this.farmsRepository.findOne({
       where: {
@@ -40,13 +44,12 @@ export class FarmsService {
 
     const newFarm = this.farmsRepository.create(createFarmByDTO(data, user));
     const farm = this.farmsRepository.save(newFarm);
-    await this.updateAvgYield();
     return farm;
   }
 
-  public async fetchAll(query: QueryFarmsInputDto, user: User): Promise<Farm[]> {
-    console.log("fetchAll", query, user);
-
+  // eslint-disable-next-line no-unused-vars
+  public async fetchAll(query: QueryFarmsInputDto, _user: User): Promise<Farm[]> {
+    await this.updateAvgYield();
     let findOptions: FindManyOptions<Farm> = {};
 
     if (query.outliers === Outliers.Select) {

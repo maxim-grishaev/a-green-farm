@@ -1,7 +1,7 @@
 import config from "config/config";
 import { Express } from "express";
 import { setupServer } from "server/server";
-import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
+import { clearDatabase, disconnectAndClearDatabase } from "helpers/db";
 import http, { Server } from "http";
 import { dataSource as ds } from "orm/orm.config";
 import supertest, { SuperAgentTest } from "supertest";

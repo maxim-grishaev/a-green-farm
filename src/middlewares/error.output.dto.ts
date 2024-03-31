@@ -1,5 +1,5 @@
 import { Expose } from "class-transformer";
-import { createAsPlain } from "../helpers/utils";
+import { createSanitizer } from "../helpers/createSanitizer";
 
 /**
  * @openapi
@@ -28,4 +28,4 @@ export class ErrorOutputDto {
   public readonly message: string;
 }
 
-export const asPlainError = createAsPlain(ErrorOutputDto);
+export const asPlainError = createSanitizer(ErrorOutputDto);

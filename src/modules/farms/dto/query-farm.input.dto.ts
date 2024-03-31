@@ -36,7 +36,8 @@ const normaliseBooleanString = (value: string): Outliers | undefined => {
  *            If true select only outliers, if false remove outliers, if not provided do not filter
  */
 export class QueryFarmsInputDto {
-  public static fromPlain = (data: unknown) => plainToInstance(QueryFarmsInputDto, data);
+  public static fromPlain = (data: Partial<Record<keyof QueryFarmsInputDto, string>>) =>
+    plainToInstance(QueryFarmsInputDto, data);
 
   @IsEnum(["name", "date", "driving_distance"])
   @IsOptional()

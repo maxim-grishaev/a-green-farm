@@ -3,7 +3,7 @@ import { validateInputMiddleware } from "middlewares/validate-input.middleware";
 import { CreateUserInputDto } from "modules/users/dto/create-user.input.dto";
 import { UsersController } from "modules/users/users.controller";
 import { DataSource } from "typeorm";
-import { asAsyncRoute } from "../helpers/utils";
+import { asAsyncRoute } from "../helpers/asAsyncMiddleware";
 
 export const createUsersRouter = (ds: DataSource) => {
   const router = Router();

@@ -3,7 +3,7 @@ import { validate } from "class-validator";
 import { BadRequestError } from "errors/errors";
 import { Request } from "express";
 import { getErrorMessages } from "helpers/getErrorMessages";
-import { asAsyncMiddleware } from "../helpers/utils";
+import { asAsyncMiddleware } from "../helpers/asAsyncMiddleware";
 
 export const validateInputMiddleware = (validationSchema: ClassConstructor<object>) =>
   asAsyncMiddleware(async (req: Request) => {

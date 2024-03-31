@@ -1,5 +1,5 @@
 import { UnprocessableEntityError } from "errors/errors";
-import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
+import { clearDatabase, disconnectAndClearDatabase } from "helpers/db";
 import { dataSource as ds } from "orm/orm.config";
 import { CreateUserInputDto } from "../dto/create-user.input.dto";
 import { User } from "../entities/user.entity";

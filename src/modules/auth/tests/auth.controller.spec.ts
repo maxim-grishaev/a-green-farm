@@ -4,7 +4,7 @@ import http from "http";
 import { dataSource as ds } from "orm/orm.config";
 import * as supertest from "supertest";
 import { setupServer } from "server/server";
-import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
+import { clearDatabase, disconnectAndClearDatabase } from "helpers/db";
 import { LoginUserInputDto } from "../dto/login-user.input.dto";
 import { AccessToken } from "../entities/access-token.entity";
 import { User } from "modules/users/entities/user.entity";

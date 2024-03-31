@@ -2,7 +2,7 @@ import config from "config/config";
 import { fromUnixTime } from "date-fns";
 import { UnauthorizedError } from "errors/errors";
 import { Express, Response } from "express";
-import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
+import { clearDatabase, disconnectAndClearDatabase } from "helpers/db";
 import http from "http";
 import { decode, sign } from "jsonwebtoken";
 import { RequestWithUser, authMiddleware } from "middlewares/auth.middleware";

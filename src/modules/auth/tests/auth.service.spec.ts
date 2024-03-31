@@ -2,7 +2,7 @@ import config from "config/config";
 import { UnprocessableEntityError } from "errors/errors";
 import { Express } from "express";
 import { setupServer } from "server/server";
-import { clearDatabase, disconnectAndClearDatabase } from "helpers/utils";
+import { clearDatabase, disconnectAndClearDatabase } from "helpers/db";
 import { dataSource as ds } from "orm/orm.config";
 import * as bcrypt from "bcrypt";
 import { AuthService } from "../auth.service";

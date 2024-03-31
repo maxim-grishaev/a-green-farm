@@ -7,7 +7,7 @@ import { LocationDto, getPointByCoord } from "../../location/dto/location.dto";
 
 export const createFarmByDTO = (input: CreateFarmInputDto, user: User): DeepPartial<Farm> => {
   const loc = plainToInstance(LocationDto, input.location);
-  const farm = new Farm();
+  const farm: DeepPartial<Farm> = new Farm();
   farm.name = input.name;
   farm.size = input.size;
   farm.yield = input.yield;
