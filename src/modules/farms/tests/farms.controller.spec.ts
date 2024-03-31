@@ -10,7 +10,8 @@ import { Farm } from "../entities/farm.entity";
 import { User } from "../../users/entities/user.entity";
 import { hashPassword } from "../../../helpers/password";
 import { TokenOutputDto } from "../../auth/dto/token.output.dto";
-import { getFarmByDTO } from "../entities/getFarmByDTO";
+import { createFarmByDTO } from "../entities/getFarmByDTO";
+import { getPointByCoord } from "../../location/dto/location.dto";
 
 describe("FarmsController", () => {
   let app: Express;
@@ -44,8 +45,10 @@ describe("FarmsController", () => {
         email: "no@no.no",
         hashedPassword: await hashPassword("test"),
         address: "address",
-        lat: 0,
-        lng: 0,
+        coord: getPointByCoord({
+          lat: 0,
+          lng: 0,
+        }),
       });
       const resp = await agent.post("/api/auth/login").send({ email: user.email, password: "test" });
       token = (resp.body as TokenOutputDto).token;
@@ -91,7 +94,7 @@ describe("FarmsController", () => {
     });
 
     it("should throw UnprocessableEntityError if farm name already exists", async () => {
-      await ds.getRepository(Farm).save(getFarmByDTO(input, user));
+      await ds.getRepository(Farm).save(createFarmByDTO(input, user));
       const res = await agent.post("/api/farms").send(input).set("authorization", `Bearer ${token}`);
 
       expect(res.statusCode).toBe(422);

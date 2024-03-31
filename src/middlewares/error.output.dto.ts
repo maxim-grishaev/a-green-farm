@@ -1,4 +1,4 @@
-import { Exclude, Expose } from "class-transformer";
+import { Expose } from "class-transformer";
 import { createAsPlain } from "../helpers/utils";
 
 /**
@@ -16,10 +16,6 @@ import { createAsPlain } from "../helpers/utils";
  *         example: "Invalid request data"
  */
 export class ErrorOutputDto {
-  @Exclude()
-  @Exclude()
-  public static asPlain = createAsPlain(ErrorOutputDto);
-
   constructor(data: { errorName: string; message: string }) {
     this.name = data.errorName;
     this.message = data.message;
@@ -31,3 +27,5 @@ export class ErrorOutputDto {
   @Expose()
   public readonly message: string;
 }
+
+export const asPlainError = createAsPlain(ErrorOutputDto);

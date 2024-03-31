@@ -29,9 +29,7 @@ export class Farm extends WithLocation {
   @Column({ type: "float" })
   public size: number;
 
-  @ManyToOne(() => User, user => user.farms, {
-    nullable: false,
-  })
+  @ManyToOne(() => User, user => user.farms, { nullable: false })
   @JoinColumn({ name: "userId" })
   public user: User;
 

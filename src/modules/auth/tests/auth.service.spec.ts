@@ -9,6 +9,7 @@ import { AuthService } from "../auth.service";
 import { LoginUserInputDto } from "../dto/login-user.input.dto";
 import http, { Server } from "http";
 import { User } from "modules/users/entities/user.entity";
+import { getPointByCoord } from "../../location/dto/location.dto";
 
 describe("AuthService", () => {
   let app: Express;
@@ -42,7 +43,12 @@ describe("AuthService", () => {
   describe(".login", () => {
     const loginDto: LoginUserInputDto = { email: "user@test.com", password: validPassword };
     const createUser = async (userDto: LoginUserInputDto) =>
-      ds.getRepository(User).save({ email: userDto.email, hashedPassword, address: "xx", lat: 0, lng: 0 });
+      ds.getRepository(User).save({
+        email: userDto.email,
+        hashedPassword,
+        address: "xx",
+        coord: getPointByCoord({ lat: 0, lng: 0 }),
+      });
 
     it("should create access token for existing user", async () => {
       await createUser(loginDto);

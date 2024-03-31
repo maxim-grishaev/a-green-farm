@@ -3,7 +3,7 @@ import { CreateFarmInputDto } from "./dto/create-farm.input.dto";
 import { Farm } from "./entities/farm.entity";
 import { UnprocessableEntityError } from "errors/errors";
 import { User } from "../users/entities/user.entity";
-import { getFarmByDTO } from "./entities/getFarmByDTO";
+import { createFarmByDTO } from "./entities/getFarmByDTO";
 import { Outliers, QueryFarmsInputDto } from "./dto/query-farm.input.dto";
 
 const QUERY_LIMIT = 100;
@@ -38,7 +38,7 @@ export class FarmsService {
       throw new UnprocessableEntityError("A farm with the same name already exists");
     }
 
-    const newFarm = this.farmsRepository.create(getFarmByDTO(data, user));
+    const newFarm = this.farmsRepository.create(createFarmByDTO(data, user));
     const farm = this.farmsRepository.save(newFarm);
     await this.updateAvgYield();
     return farm;

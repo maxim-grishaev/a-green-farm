@@ -1,7 +1,7 @@
-import { BadRequestError, UnauthorizedError, UnprocessableEntityError } from "errors/errors";
 import { NextFunction, Request, Response } from "express";
 import { EntityNotFoundError } from "typeorm";
-import { ErrorOutputDto } from "./error.output.dto";
+import { BadRequestError, UnauthorizedError, UnprocessableEntityError } from "errors/errors";
+import { asPlainError } from "./error.output.dto";
 
 const nameByType: Record<number, string> = {
   400: "BadRequestError",
@@ -44,7 +44,7 @@ export function handleErrorMiddleware(error: Error, _: Request, res: Response, n
   }
 
   res.status(status).send(
-    ErrorOutputDto.asPlain({
+    asPlainError({
       errorName: getErrorNameByStatus(status),
       message: errorMessage,
     }),

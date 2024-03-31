@@ -24,6 +24,10 @@ export const createAsPlain =
 
 export const toError = (err: unknown) => (err instanceof Error ? err : new Error(String(err)));
 
+/**
+ * Wrap an async function to be used as an express middleware.
+ * Handles errors by calling the next function with the error, so no need in try/catch.
+ */
 export const asAsyncMiddleware =
   <Req extends Request>(fn: (req: Req, res: Response) => Promise<void>, handleError = toError) =>
   (req: Req, res: Response, next: NextFunction): Promise<void> =>

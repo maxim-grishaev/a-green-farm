@@ -9,6 +9,7 @@ import { LoginUserInputDto } from "../dto/login-user.input.dto";
 import { AccessToken } from "../entities/access-token.entity";
 import { User } from "modules/users/entities/user.entity";
 import { hashPassword } from "../../../helpers/password";
+import { getPointByCoord } from "../../location/dto/location.dto";
 
 describe("AuthController", () => {
   let app: Express;
@@ -38,7 +39,12 @@ describe("AuthController", () => {
 
   describe("POST /auth", () => {
     const createUser = async (userDto: Partial<User>) =>
-      ds.getRepository(User).save({ email: userDto.email, hashedPassword, address: "xx", lat: 0, lng: 0 });
+      ds.getRepository(User).save({
+        email: userDto.email,
+        hashedPassword,
+        address: "xx",
+        coord: getPointByCoord({ lat: 0, lng: 0 }),
+      });
     const loginDto: LoginUserInputDto = { email: "user@test.com", password: validPassword };
 
     it("should login existing user", async () => {

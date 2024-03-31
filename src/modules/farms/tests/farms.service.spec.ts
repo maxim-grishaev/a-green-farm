@@ -5,7 +5,8 @@ import { CreateFarmInputDto } from "../dto/create-farm.input.dto";
 import { Farm } from "../entities/farm.entity";
 import { FarmsService } from "../farms.service";
 import { User } from "../../users/entities/user.entity";
-import { getFarmByDTO } from "../entities/getFarmByDTO";
+import { createFarmByDTO } from "../entities/getFarmByDTO";
+import { getPointByCoord } from "../../location/dto/location.dto";
 
 describe("FarmsService", () => {
   let farmsService: FarmsService;
@@ -33,8 +34,10 @@ describe("FarmsService", () => {
       email: "no@no.no",
       hashedPassword: "xx",
       address: "address",
-      lat: 0,
-      lng: 0,
+      coord: getPointByCoord({
+        lat: 0,
+        lng: 0,
+      }),
     });
 
     input = {
@@ -62,8 +65,10 @@ describe("FarmsService", () => {
       expect(repoSaveSpy).toBeCalledWith(
         expect.objectContaining({
           address: "address",
-          lat: 0,
-          lng: 0,
+          coord: getPointByCoord({
+            lat: 0,
+            lng: 0,
+          }),
           name: "Test Farm 1",
           size: 10,
           yield: 200,
@@ -85,7 +90,7 @@ describe("FarmsService", () => {
 
     describe("if farm name already exists", () => {
       it("should throw UnprocessableEntityError", async () => {
-        await farmsRepository.save(getFarmByDTO(input, user));
+        await farmsRepository.save(createFarmByDTO(input, user));
         repoSaveSpy.mockClear();
 
         repoSaveSpy = jest.spyOn(farmsRepository, "save");

@@ -1,4 +1,4 @@
-import { Exclude, Expose } from "class-transformer";
+import { Expose } from "class-transformer";
 import { AccessToken } from "../entities/access-token.entity";
 import { createAsPlain } from "../../../helpers/utils";
 
@@ -13,9 +13,6 @@ import { createAsPlain } from "../../../helpers/utils";
  *          type: string
  */
 export class TokenOutputDto {
-  @Exclude()
-  public static asPlain = createAsPlain(TokenOutputDto);
-
   constructor({ token }: AccessToken) {
     this.token = token;
   }
@@ -23,3 +20,5 @@ export class TokenOutputDto {
   @Expose()
   public token: string;
 }
+
+export const asPlainToken = createAsPlain(TokenOutputDto);

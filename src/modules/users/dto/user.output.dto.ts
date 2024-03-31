@@ -1,4 +1,4 @@
-import { LocationDto } from "../../location/dto/location.dto";
+import { LocationDto, getLocationDtoByPoint } from "../../location/dto/location.dto";
 import { Exclude, Expose, Transform } from "class-transformer";
 import { User } from "../entities/user.entity";
 import { createAsPlain } from "../../../helpers/utils";
@@ -26,12 +26,8 @@ import { createAsPlain } from "../../../helpers/utils";
  *          example: 2021-08-31T12:00:00.000Z
  */
 export class UserOutputDto {
-  @Exclude()
-  @Exclude()
-  public static asPlain = createAsPlain(UserOutputDto);
-
-  constructor({ address, lat, lng, ...partial }: User) {
-    this.location = new LocationDto({ address, lat, lng });
+  constructor({ address, coord, ...partial }: User) {
+    this.location = getLocationDtoByPoint(coord, address);
     Object.assign(this, partial);
   }
 
@@ -51,4 +47,9 @@ export class UserOutputDto {
 
   @Exclude()
   public location: LocationDto;
+
+  @Exclude()
+  public farms: unknown[];
 }
+
+export const asPlainUser = createAsPlain(UserOutputDto);

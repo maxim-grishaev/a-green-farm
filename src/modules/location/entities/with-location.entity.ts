@@ -1,12 +1,13 @@
-import { Column } from "typeorm";
+import { Column, Index, Point } from "typeorm";
 
-export class WithLocation {
-  @Column({ type: "float" })
-  public lat: number;
-
-  @Column({ type: "float" })
-  public lng: number;
-
+export abstract class WithLocation {
   @Column({ type: "varchar" })
   public address: string;
+
+  @Column("geography", {
+    spatialFeatureType: "Point",
+    srid: 4326,
+  })
+  @Index({ spatial: true })
+  public coord: Point;
 }

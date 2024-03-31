@@ -2,7 +2,7 @@ import { UnprocessableEntityError } from "errors/errors";
 import { DataSource, FindOptionsWhere } from "typeorm";
 import { CreateUserInputDto } from "./dto/create-user.input.dto";
 import { User } from "./entities/user.entity";
-import { getUserByDTO } from "./entities/getUserByDTO";
+import { createUserByDTO } from "./entities/createUserByDTO";
 import { comparePasswords } from "../../helpers/password";
 
 const assertCred: (cond: unknown) => asserts cond = cond => {
@@ -20,7 +20,7 @@ export class UsersService {
       throw new UnprocessableEntityError("A user for the email already exists");
     }
 
-    const newUser = this.usersRepository.create(await getUserByDTO(data));
+    const newUser = this.usersRepository.create(await createUserByDTO(data));
     return this.usersRepository.save(newUser);
   }
 

@@ -1,6 +1,7 @@
 import { Exclude, Expose, Transform } from "class-transformer";
 import { Farm } from "../entities/farm.entity";
 import { createAsPlain } from "../../../helpers/utils";
+import { getLocationDtoByPoint } from "../../location/dto/location.dto";
 
 /**
  * @openapi
@@ -33,12 +34,12 @@ import { createAsPlain } from "../../../helpers/utils";
  *          type: string
  */
 export class FarmOutputDto {
-  @Exclude()
-  @Exclude()
-  public static asPlain = createAsPlain(FarmOutputDto);
-
-  constructor({ user, ...data }: Farm) {
+  constructor({ user, coord, address, ...data }: Farm) {
     this.owner = user.email;
+    const loc = getLocationDtoByPoint(coord, address);
+    this.lat = loc.lat;
+    this.lng = loc.lng;
+    this.address = loc.address;
     Object.assign(this, data);
   }
 
@@ -74,3 +75,5 @@ export class FarmOutputDto {
   @Exclude()
   public lng: number;
 }
+
+export const asPlainFarm = createAsPlain(FarmOutputDto);
