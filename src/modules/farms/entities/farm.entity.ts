@@ -31,7 +31,7 @@ export class Farm extends WithLocation {
 
   @ManyToOne(() => User, user => user.farms, { nullable: false })
   @JoinColumn({ name: "userId" })
-  public user: User;
+  public user?: User;
 
   @CreateDateColumn()
   public createdAt: Date;

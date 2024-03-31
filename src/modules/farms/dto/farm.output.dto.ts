@@ -35,6 +35,9 @@ import { getLocationDtoByPoint } from "../../location/dto/location.dto";
  */
 export class FarmOutputDto {
   constructor({ user, coord, address, ...data }: Farm) {
+    if (!user) {
+      throw new Error("[FarmOutputDto] User is required");
+    }
     this.owner = user.email;
     const loc = getLocationDtoByPoint(coord, address);
     this.lat = loc.lat;

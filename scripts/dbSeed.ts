@@ -13,6 +13,15 @@ const REQ = {
   maxFarmPerUser: 3,
 };
 
+const EUROPE_AREA = {
+  latMin: 44,
+  latMax: 54,
+  lngMin: 2,
+  lngMax: 30,
+};
+
+const randBetween = (min: number, max: number) => Math.random() * (max - min) + min;
+
 const createFarm = (n: number, userNo: number, coord: { lat: number; lng: number }) => {
   const frm: DeepPartial<Farm> = {};
   frm.name = `Farm # ${n} of user ${userNo}`;
@@ -20,8 +29,8 @@ const createFarm = (n: number, userNo: number, coord: { lat: number; lng: number
   frm.yield = Math.random() * 100;
   frm.address = `Address of farm ${n}`;
   frm.coord = getPointByCoord({
-    lat: Math.random() * 2 - 1 + coord.lat,
-    lng: Math.random() * 2 - 1 + coord.lng,
+    lat: randBetween(coord.lat - 0.2, coord.lat + 0.2),
+    lng: randBetween(coord.lng - 0.2, coord.lng + 0.2),
   });
   return plainToInstance(Farm, frm);
 };
@@ -29,8 +38,8 @@ const createFarm = (n: number, userNo: number, coord: { lat: number; lng: number
 const createUser = async (n: number) => {
   const farmsNo = Math.floor(Math.random() * REQ.maxFarmPerUser + 1);
   const coord = {
-    lat: Math.random() * 180 - 90,
-    lng: Math.random() * 360 - 180,
+    lat: randBetween(EUROPE_AREA.latMin, EUROPE_AREA.latMax),
+    lng: randBetween(EUROPE_AREA.lngMin, EUROPE_AREA.lngMax),
   };
   const usr: DeepPartial<User> = {
     email: `usr_${n}@foo.bar`,

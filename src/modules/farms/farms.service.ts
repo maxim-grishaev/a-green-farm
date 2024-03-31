@@ -1,4 +1,4 @@
-import { DataSource, FindManyOptions, LessThanOrEqual, MoreThan } from "typeorm";
+import { DataSource } from "typeorm";
 import { CreateFarmInputDto } from "./dto/create-farm.input.dto";
 import { Farm } from "./entities/farm.entity";
 import { UnprocessableEntityError } from "errors/errors";
@@ -47,35 +47,35 @@ export class FarmsService {
     return farm;
   }
 
-  // eslint-disable-next-line no-unused-vars
-  public async fetchAll(query: QueryFarmsInputDto, _user: User): Promise<Farm[]> {
-    await this.updateAvgYield();
-    let findOptions: FindManyOptions<Farm> = {};
+  public async fetchAll(query: QueryFarmsInputDto, user: User): Promise<Array<Farm>> {
+    const sqlQuery = this.farmsRepository
+      .createQueryBuilder("farm")
+      .select()
+      .leftJoinAndSelect("farm.user", "user")
+      .orderBy({ "farm.updatedAt": "ASC" })
+      .limit(QUERY_LIMIT);
 
-    if (query.outliers === Outliers.Select) {
-      findOptions = { where: { yield: LessThanOrEqual(OUTLIER_THRESHOLD * this.#yieldAvg) } };
-    } else if (query.outliers === Outliers.Remove) {
-      findOptions = { where: { yield: MoreThan(OUTLIER_THRESHOLD * this.#yieldAvg) } };
+    if (query.outliers !== undefined) {
+      await this.updateAvgYield();
+      const threshhold = OUTLIER_THRESHOLD * this.#yieldAvg;
+      if (query.outliers === Outliers.Remove) {
+        sqlQuery.where("yield > :threshhold", { threshhold });
+      } else if (query.outliers === Outliers.Select) {
+        sqlQuery.where("yield <= :threshhold", { threshhold });
+      }
     }
 
-    switch (query.sortBy) {
-      case "name":
-        findOptions.order = { name: "ASC" };
-        break;
-      case "date":
-        findOptions.order = { updatedAt: "ASC" };
-        break;
-      case "driving_distance":
-        throw new UnprocessableEntityError("Sort by driving_distance is not implemented");
-      default:
-        break;
+    if (query.sortBy === "driving_distance") {
+      sqlQuery.setParameter("user_coord", user.coord.coordinates);
+      const geoPoint = `ST_Point(:...user_coord, 4326)::geography`;
+      sqlQuery.addSelect(`ST_Distance(${geoPoint}, "farm"."coord")`, "distance");
+      sqlQuery.orderBy("distance", "ASC");
+    } else if (query.sortBy === "name") {
+      sqlQuery.orderBy({ "farm.name": "ASC" });
     }
 
-    const farms = await this.farmsRepository.find({
-      ...findOptions,
-      relations: ["user"],
-      take: QUERY_LIMIT,
-    });
+    const farms = await sqlQuery.getMany();
+
     return farms;
   }
 }
