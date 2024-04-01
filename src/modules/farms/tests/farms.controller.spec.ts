@@ -11,7 +11,7 @@ import { User } from "../../users/entities/user.entity";
 import { hashPassword } from "../../../helpers/password";
 import { TokenOutputDto } from "../../auth/dto/token.output.dto";
 import { createFarmByDTO } from "../entities/getFarmByDTO";
-import { getPointByCoord } from "../../location/dto/location.dto";
+import { getPointByLatLng } from "../../location/dto/location.dto";
 
 describe("FarmsController", () => {
   let app: Express;
@@ -45,7 +45,7 @@ describe("FarmsController", () => {
         email: "no@no.no",
         hashedPassword: await hashPassword("test"),
         address: "address",
-        coord: getPointByCoord({
+        coord: getPointByLatLng({
           lat: 0,
           lng: 0,
         }),

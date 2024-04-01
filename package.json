@@ -87,6 +87,7 @@
     "modulePaths": [
       "<rootDir>",
       "/src"
-    ]
+    ],
+    "testTimeout": 20000
   }
 }

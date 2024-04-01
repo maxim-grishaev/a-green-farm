@@ -1,19 +1,21 @@
 import { Expose, Transform } from "class-transformer";
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { Point } from "typeorm";
+import { getLatLngByPoint } from "../../../helpers/latLng";
 
 // https://datatracker.ietf.org/doc/html/rfc7946#section-9
-export const getPointByCoord = (location: Omit<LocationDto, "address">): Point => {
+export const getPointByLatLng = (latLng: Omit<LocationDto, "address">): Point => {
   return {
     type: "Point",
-    coordinates: [location.lng, location.lat],
+    coordinates: [latLng.lng, latLng.lat],
   };
 };
 
 export const getLocationDtoByPoint = (point: Point, address = ""): LocationDto => {
+  const coord = getLatLngByPoint(point);
   return new LocationDto({
-    lat: point.coordinates[1],
-    lng: point.coordinates[0],
+    lat: coord.lat,
+    lng: coord.lng,
     address,
   });
 };

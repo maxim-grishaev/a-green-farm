@@ -4,12 +4,12 @@ import { User } from "../src/modules/users/entities/user.entity";
 import { DeepPartial } from "typeorm";
 import { connectToDB } from "./connectToDB";
 import { hashPassword } from "../src/helpers/password";
-import { getPointByCoord } from "../src/modules/location/dto/location.dto";
+import { getPointByLatLng } from "../src/modules/location/dto/location.dto";
 
 const range = (n: number) => [...Array(n).keys()];
 
 const REQ = {
-  countUsers: 100,
+  countUsers: 20,
   maxFarmPerUser: 3,
 };
 
@@ -28,7 +28,7 @@ const createFarm = (n: number, userNo: number, coord: { lat: number; lng: number
   frm.size = Math.random() * 100;
   frm.yield = Math.random() * 100;
   frm.address = `Address of farm ${n}`;
-  frm.coord = getPointByCoord({
+  frm.coord = getPointByLatLng({
     lat: randBetween(coord.lat - 0.2, coord.lat + 0.2),
     lng: randBetween(coord.lng - 0.2, coord.lng + 0.2),
   });
@@ -45,7 +45,7 @@ const createUser = async (n: number) => {
     email: `usr_${n}@foo.bar`,
     hashedPassword: await hashPassword(`password${n}`),
     address: `Address of user ${n}`,
-    coord: getPointByCoord(coord),
+    coord: getPointByLatLng(coord),
     farms: range(farmsNo).map(fn => createFarm(fn, n, coord)),
   };
   console.log(`User ${n} has ${farmsNo} farms`);

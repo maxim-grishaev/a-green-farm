@@ -6,11 +6,19 @@ import { Farm } from "../entities/farm.entity";
 import { FarmsService } from "../farms.service";
 import { User } from "../../users/entities/user.entity";
 import { createFarmByDTO } from "../entities/getFarmByDTO";
-import { getPointByCoord } from "../../location/dto/location.dto";
+import { getPointByLatLng } from "../../location/dto/location.dto";
 import { QueryFarmsInputDto } from "../dto/query-farm.input.dto";
 
+class FarmsServiceTest extends FarmsService {
+  public mockFetchDistances = jest.fn().mockResolvedValue([]);
+
+  public mockGoogleClient() {
+    return jest.spyOn(this._googleClient, "fetchDistances").mockResolvedValue([]);
+  }
+}
+
 describe("FarmsService", () => {
-  let farmsService: FarmsService;
+  let farmsService: FarmsServiceTest;
   let user: User;
   let input: CreateFarmInputDto;
   let farmsRepository = ds.getRepository(Farm);
@@ -29,13 +37,14 @@ describe("FarmsService", () => {
 
   beforeEach(async () => {
     await clearDatabase(ds);
-    farmsService = new FarmsService(ds);
+    farmsService = new FarmsServiceTest(ds);
+    farmsService.mockGoogleClient();
 
     user = await userRepository.save({
       email: "no@no.no",
       hashedPassword: "xx",
       address: "address",
-      coord: getPointByCoord({
+      coord: getPointByLatLng({
         lat: 0,
         lng: 0,
       }),
@@ -66,7 +75,7 @@ describe("FarmsService", () => {
       expect(repoSaveSpy).toBeCalledWith(
         expect.objectContaining({
           address: "address",
-          coord: getPointByCoord({
+          coord: getPointByLatLng({
             lat: 0,
             lng: 0,
           }),
@@ -104,31 +113,46 @@ describe("FarmsService", () => {
     });
   });
 
-  describe(".fetchAll", () => {
+  describe(".fetchFarms", () => {
+    // TODO: test pagination / limit
     // it("should fetch all farms with no params (limit: 100)", async () => {
     // });
 
-    it("should sort by name", async () => {
-      await farmsRepository.save(createFarmByDTO({ ...input, name: "BBBB" }, user));
-      await farmsRepository.save(createFarmByDTO({ ...input, name: "AAAA" }, user));
+    describe("sortBy", () => {
+      it("should sort by name", async () => {
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "BBBB" }, user));
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "AAAA" }, user));
 
-      const result = await farmsService.fetchAll(QueryFarmsInputDto.fromPlain({ sortBy: "name" }), user);
+        const result = await farmsService.fetchFarms(QueryFarmsInputDto.fromPlain({ sortBy: "name" }), user);
 
-      expect(result).toHaveLength(2);
-      expect(result.map(it => it.name)).toEqual(["AAAA", "BBBB"]);
-    });
+        expect(result).toHaveLength(2);
+        expect(result.map(it => it.name)).toEqual(["AAAA", "BBBB"]);
+      });
 
-    it("should sort by date", async () => {
-      const farm1 = await farmsRepository.save(createFarmByDTO({ ...input, name: "a" }, user));
-      await new Promise(resolve => setTimeout(resolve, 10));
-      const farm2 = await farmsRepository.save(createFarmByDTO({ ...input, name: "b" }, user));
-      await farmsRepository.save({ name: "a2", id: farm1.id });
+      it("should sort by date", async () => {
+        const farm1 = await farmsRepository.save(createFarmByDTO({ ...input, name: "a" }, user));
+        await new Promise(resolve => setTimeout(resolve, 10));
+        const farm2 = await farmsRepository.save(createFarmByDTO({ ...input, name: "b" }, user));
+        await farmsRepository.save({ name: "a2", id: farm1.id });
 
-      // Check it's not sorted by name
-      const resultD = await farmsService.fetchAll(QueryFarmsInputDto.fromPlain({ sortBy: "date" }), user);
-      expect(resultD).toHaveLength(2);
-      expect(resultD.map(it => it.id)).toEqual([farm2.id, farm1.id]);
-      expect(resultD.map(it => it.name)).toEqual(["b", "a2"]);
+        // Check it's not sorted by name
+        const resultD = await farmsService.fetchFarms(QueryFarmsInputDto.fromPlain({ sortBy: "date" }), user);
+        expect(resultD).toHaveLength(2);
+        expect(resultD.map(it => it.id)).toEqual([farm2.id, farm1.id]);
+        expect(resultD.map(it => it.name)).toEqual(["b", "a2"]);
+      });
+
+      it("should sort by driving_distance", async () => {
+        const mockGC = farmsService.mockGoogleClient();
+        mockGC.mockResolvedValueOnce([20, 30, 10]);
+
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "a" }, user));
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "b" }, user));
+        await farmsRepository.save(createFarmByDTO({ ...input, name: "c" }, user));
+
+        const result = await farmsService.fetchFarms(QueryFarmsInputDto.fromPlain({ sortBy: "driving_distance" }), user);
+        expect(result.map(it => it.name)).toEqual(["c", "a", "b"]);
+      });
     });
 
     describe("outliers filter (yield less than threshold)", () => {
@@ -143,17 +167,9 @@ describe("FarmsService", () => {
         await farmsRepository.save(createFarmByDTO({ ...input, name: "b", yield: 200 }, user));
         await farmsRepository.save(createFarmByDTO({ ...input, name: "c", yield: 300 }, user));
 
-        const result = await farmsService.fetchAll(QueryFarmsInputDto.fromPlain({ outliers, sortBy: "name" }), user);
+        const result = await farmsService.fetchFarms(QueryFarmsInputDto.fromPlain({ outliers, sortBy: "name" }), user);
 
         expect(result.map(it => it.name)).toEqual(exp);
-      });
-    });
-
-    describe("if sortBy is driving_distance", () => {
-      it("should throw UnprocessableEntityError", async () => {
-        await expect(farmsService.fetchAll({ sortBy: "driving_distance" }, user)).rejects.toThrow(
-          new UnprocessableEntityError("Sort by driving_distance is not implemented"),
-        );
       });
     });
   });

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asAsyncMiddleware, asAsyncRoute, toError } from "../asAsyncMiddleware";
+import { asAsyncMiddleware, asAsyncRoute } from "../asAsyncMiddleware";
 
 describe("asAsyncMiddleware", () => {
   it.each([
@@ -61,19 +61,5 @@ describe("asAsyncRoute", () => {
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.send).toHaveBeenCalledWith("test data");
-  });
-});
-
-describe("toError", () => {
-  it("should return the same error", () => {
-    const error = new Error("test error");
-    expect(toError(error)).toBe(error);
-  });
-
-  it("should return a new error if it's anything other", () => {
-    const error = "test error";
-    const result = toError(error);
-    expect(result).toBeInstanceOf(Error);
-    expect(result.message).toBe("test error");
   });
 });

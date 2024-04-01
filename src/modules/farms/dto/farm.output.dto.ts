@@ -72,6 +72,10 @@ export class FarmOutputDto {
   @Expose()
   public address: string;
 
+  @Expose()
+  @Transform(({ value }) => (value as number) ?? null)
+  public drivingDistance: number | null;
+
   @Exclude()
   public lat: number;
 

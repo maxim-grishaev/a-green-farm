@@ -9,7 +9,7 @@ import { AuthService } from "../auth.service";
 import { LoginUserInputDto } from "../dto/login-user.input.dto";
 import http, { Server } from "http";
 import { User } from "modules/users/entities/user.entity";
-import { getPointByCoord } from "../../location/dto/location.dto";
+import { getPointByLatLng } from "../../location/dto/location.dto";
 
 describe("AuthService", () => {
   let app: Express;
@@ -47,7 +47,7 @@ describe("AuthService", () => {
         email: userDto.email,
         hashedPassword,
         address: "xx",
-        coord: getPointByCoord({ lat: 0, lng: 0 }),
+        coord: getPointByLatLng({ lat: 0, lng: 0 }),
       });
 
     it("should create access token for existing user", async () => {

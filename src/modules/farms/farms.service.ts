@@ -1,24 +1,24 @@
-import { DataSource, Point } from "typeorm";
+import { DataSource } from "typeorm";
 import { CreateFarmInputDto } from "./dto/create-farm.input.dto";
 import { Farm } from "./entities/farm.entity";
 import { UnprocessableEntityError } from "errors/errors";
 import { User } from "../users/entities/user.entity";
 import { createFarmByDTO } from "./entities/getFarmByDTO";
 import { Outliers, QueryFarmsInputDto } from "./dto/query-farm.input.dto";
-import { Client, LatLng, TravelMode } from "@googlemaps/google-maps-services-js";
 import config from "config/config";
+import { getLatLngByPoint } from "../../helpers/latLng";
+import { createDistanceFetcher } from "../../helpers/createDistanceFetcher";
+import { toError } from "../../helpers/toError";
 
 const QUERY_LIMIT = 100;
 const OUTLIER_THRESHOLD = 0.3;
 
-const gmsClient = new Client({});
-const getCoord = (point: Point): LatLng => ({
-  lat: point.coordinates[0],
-  lng: point.coordinates[1],
-});
+type FarmWithDistance = Farm & { drivingDistance: number | undefined };
 
 export class FarmsService {
   #yieldAvg: number;
+  #gms = createDistanceFetcher(config.GOOGLE_MAPS_API_KEY);
+
   constructor(ds: DataSource, private readonly farmsRepository = ds.getRepository(Farm)) {}
 
   public async init() {
@@ -61,6 +61,7 @@ export class FarmsService {
       .select()
       .leftJoinAndSelect("farm.user", "user")
       .orderBy({ "farm.updatedAt": "ASC" })
+      .offset(query.page !== undefined && query.page > 0 ? query.page * QUERY_LIMIT : undefined)
       .limit(QUERY_LIMIT);
 
     if (query.outliers !== undefined) {
@@ -74,6 +75,8 @@ export class FarmsService {
     }
 
     if (query.sortBy === "driving_distance") {
+      // FIXME: a wirkaround, because of a weird bug (in typeorm, I think)
+      // Providing user.coord directly in the query throws "parse error - invalid geometry"
       sqlQuery.setParameter("user_coord", user.coord.coordinates);
       const geoPoint = `ST_Point(:...user_coord, 4326)::geography`;
       sqlQuery.addSelect(`ST_Distance(${geoPoint}, "farm"."coord")`, "distance");
@@ -87,19 +90,29 @@ export class FarmsService {
     return farms;
   }
 
-  public async fetchAll(query: QueryFarmsInputDto, user: User): Promise<Array<Farm>> {
-    const farms = await this.selectFarms(query, user);
+  protected get _googleClient() {
+    return this.#gms;
+  }
 
-    const farms25 = farms.slice(0, 25);
-    const resp = await gmsClient.distancematrix({
-      params: {
-        key: config.GOOGLE_MAPS_API_KEY,
-        origins: [{ lat: 50, lng: 10 }],
-        destinations: farms25.map(f => f.coord).map(getCoord),
-        mode: TravelMode.driving,
-      },
-    });
-    console.log("Google resp", resp.data.rows[0].elements);
-    return farms;
+  public async fetchDrivingDistances(user: User, farms: Farm[]) {
+    return this.#gms
+      .fetchDistances(
+        getLatLngByPoint(user.coord),
+        farms.map(f => getLatLngByPoint(f.coord)),
+      )
+      .catch(ex => {
+        throw toError(ex, "Unexpected Google Maps response");
+      });
+  }
+
+  public async fetchFarms(query: QueryFarmsInputDto, user: User): Promise<FarmWithDistance[]> {
+    const farms = await this.selectFarms(query, user);
+    // TODO: more granular cache to avoid fetching driving distances when we should know it
+    const dDistances = await this.fetchDrivingDistances(user, farms);
+    const farmsWithDistance: FarmWithDistance[] = farms.map((farm, i) => ({ ...farm, drivingDistance: dDistances[i] }));
+    if (query.sortBy === "driving_distance") {
+      farmsWithDistance.sort((a, b) => (a.drivingDistance ?? Infinity) - (b.drivingDistance ?? Infinity));
+    }
+    return farmsWithDistance;
   }
 }

@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-
-export const toError = (err: unknown) => (err instanceof Error ? err : new Error(String(err)));
+import { toError } from "./toError";
 
 /**
  * Wrap an async function to be used as an express middleware.

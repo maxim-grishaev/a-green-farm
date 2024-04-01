@@ -39,6 +39,13 @@ export class QueryFarmsInputDto {
   public static fromPlain = (data: Partial<Record<keyof QueryFarmsInputDto, string>>) =>
     plainToInstance(QueryFarmsInputDto, data);
 
+  @IsOptional()
+  @Transform(({ value }) => {
+    const n = Number(value);
+    return n > 0 ? n : undefined;
+  })
+  public page?: number;
+
   @IsEnum(["name", "date", "driving_distance"])
   @IsOptional()
   public sortBy?: "name" | "date" | "driving_distance";
@@ -48,4 +55,6 @@ export class QueryFarmsInputDto {
     toClassOnly: true,
   })
   public outliers?: Outliers;
+
+  public getKey = (userId: string) => [userId, this.sortBy, this.outliers, this.page ?? 0].join(":");
 }

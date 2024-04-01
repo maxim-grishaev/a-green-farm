@@ -9,7 +9,7 @@ import { LoginUserInputDto } from "../dto/login-user.input.dto";
 import { AccessToken } from "../entities/access-token.entity";
 import { User } from "modules/users/entities/user.entity";
 import { hashPassword } from "../../../helpers/password";
-import { getPointByCoord } from "../../location/dto/location.dto";
+import { getPointByLatLng } from "../../location/dto/location.dto";
 
 describe("AuthController", () => {
   let app: Express;
@@ -43,7 +43,7 @@ describe("AuthController", () => {
         email: userDto.email,
         hashedPassword,
         address: "xx",
-        coord: getPointByCoord({ lat: 0, lng: 0 }),
+        coord: getPointByLatLng({ lat: 0, lng: 0 }),
       });
     const loginDto: LoginUserInputDto = { email: "user@test.com", password: validPassword };
 
